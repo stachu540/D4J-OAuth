@@ -3,6 +3,7 @@ package com.github.xaanit.d4j.oauth;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.modules.IModule;
 
+@Deprecated
 public class D4JOAuth implements IModule {
 
 	public boolean enable(IDiscordClient client) {

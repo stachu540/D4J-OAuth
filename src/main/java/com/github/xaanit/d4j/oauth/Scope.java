@@ -4,7 +4,7 @@ public enum Scope {
 	BOT("bot"),
 	CONNECTIONS("connections"),
 	EMAIL("email"),
-	INDETIFY("identify"),
+	IDENTIFY("identify"),
 	GUILDS("guilds"),
 	GUILDS_JOIN("guilds.join"),
 	GDM_JOIN("gdm.join"),
