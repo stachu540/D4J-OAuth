@@ -50,8 +50,8 @@ public class OAuthUser implements IOAuthUser {
 	}
 
 	@Override
-	public String getDisplayName(IGuild iGuild) {
-		return user.getDisplayName(iGuild);
+	public String getDisplayName(IGuild guild) {
+		return user.getDisplayName(guild);
 	}
 
 	@Override
@@ -60,8 +60,8 @@ public class OAuthUser implements IOAuthUser {
 	}
 
 	@Override
-	public String mention(boolean b) {
-		return user.mention(b);
+	public String mention(boolean mentionWithNickname) {
+		return user.mention(mentionWithNickname);
 	}
 
 	@Override
@@ -70,18 +70,18 @@ public class OAuthUser implements IOAuthUser {
 	}
 
 	@Override
-	public List<IRole> getRolesForGuild(IGuild iGuild) {
-		return user.getRolesForGuild(iGuild);
+	public List<IRole> getRolesForGuild(IGuild guild) {
+		return user.getRolesForGuild(guild);
 	}
 
 	@Override
-	public EnumSet<Permissions> getPermissionsForGuild(IGuild iGuild) {
-		return user.getPermissionsForGuild(iGuild);
+	public EnumSet<Permissions> getPermissionsForGuild(IGuild guild) {
+		return user.getPermissionsForGuild(guild);
 	}
 
 	@Override
-	public Optional<String> getNicknameForGuild(IGuild iGuild) {
-		return user.getNicknameForGuild(iGuild);
+	public Optional<String> getNicknameForGuild(IGuild guild) {
+		return user.getNicknameForGuild(guild);
 	}
 
 	@Override
@@ -90,8 +90,8 @@ public class OAuthUser implements IOAuthUser {
 	}
 
 	@Override
-	public void moveToVoiceChannel(IVoiceChannel iVoiceChannel) throws DiscordException, RateLimitException, MissingPermissionsException {
-		user.moveToVoiceChannel(iVoiceChannel);
+	public void moveToVoiceChannel(IVoiceChannel newChannel) throws DiscordException, RateLimitException, MissingPermissionsException {
+		user.moveToVoiceChannel(newChannel);
 	}
 
 	@Override
@@ -105,13 +105,13 @@ public class OAuthUser implements IOAuthUser {
 	}
 
 	@Override
-	public boolean isDeaf(IGuild iGuild) {
-		return user.isDeaf(iGuild);
+	public boolean isDeaf(IGuild guild) {
+		return user.isDeaf(guild);
 	}
 
 	@Override
-	public boolean isMuted(IGuild iGuild) {
-		return user.isMuted(iGuild);
+	public boolean isMuted(IGuild guild) {
+		return user.isMuted(guild);
 	}
 
 	@Override
@@ -125,13 +125,13 @@ public class OAuthUser implements IOAuthUser {
 	}
 
 	@Override
-	public void addRole(IRole iRole) throws MissingPermissionsException, RateLimitException, DiscordException {
-		user.addRole(iRole);
+	public void addRole(IRole role) throws MissingPermissionsException, RateLimitException, DiscordException {
+		user.addRole(role);
 	}
 
 	@Override
-	public void removeRole(IRole iRole) throws MissingPermissionsException, RateLimitException, DiscordException {
-		user.removeRole(iRole);
+	public void removeRole(IRole role) throws MissingPermissionsException, RateLimitException, DiscordException {
+		user.removeRole(role);
 	}
 
 	@Override
