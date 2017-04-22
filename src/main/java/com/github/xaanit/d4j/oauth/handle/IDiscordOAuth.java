@@ -1,7 +1,6 @@
 package com.github.xaanit.d4j.oauth.handle;
 
 import com.github.xaanit.d4j.oauth.Scope;
-import java.net.URL;
 import sx.blah.discord.handle.obj.IUser;
 
 public interface IDiscordOAuth {
@@ -32,7 +31,7 @@ public interface IDiscordOAuth {
 	 *
 	 * @param url The URL to set it to
 	 */
-	void setRedirectUrl(URL url);
+	void setRedirectUrl(String url);
 
 	/**
 	 * Gets the access token for a user..
