@@ -12,13 +12,9 @@ public interface IDiscordOAuth {
 	 */
 	String buildAuthUrl();
 
-	/**
-	 * Gets the access token for a user..
-	 *
-	 * @param user The user to get the access token from
-	 * @return The access token
-	 */
-	String getAccessTokenForUser(IUser user);
+	IOAuthUser getOAuthUser(IUser user);
+
+	IOAuthUser getOAuthUserForID(long id);
 
 	/**
 	 * Gets the {@link IDiscordClient} client instance.

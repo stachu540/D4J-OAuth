@@ -2,6 +2,8 @@ package com.github.xaanit.d4j.oauth.handle.impl;
 
 import com.github.xaanit.d4j.oauth.Scope;
 import com.github.xaanit.d4j.oauth.handle.IDiscordOAuth;
+import com.github.xaanit.d4j.oauth.handle.IOAuthUser;
+import com.github.xaanit.d4j.oauth.handle.impl.events.OAuthUserAuthorized;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
@@ -14,11 +16,14 @@ import io.vertx.ext.web.Router;
 import org.apache.http.message.BasicNameValuePair;
 import sx.blah.discord.Discord4J;
 import sx.blah.discord.api.IDiscordClient;
+import sx.blah.discord.api.internal.DiscordClientImpl;
 import sx.blah.discord.api.internal.DiscordEndpoints;
+import sx.blah.discord.api.internal.DiscordUtils;
 import sx.blah.discord.api.internal.Requests;
 import sx.blah.discord.api.internal.json.objects.UserObject;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.RequestBuffer;
+import sx.blah.discord.util.cache.Cache;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -33,13 +38,16 @@ public class DiscordOAuth implements IDiscordOAuth {
 	private final Vertx vertx;
 	private final HttpServer server;
 	private final Router router;
+	private final Cache<IOAuthUser> oauthUserCache;
+
 
 	public DiscordOAuth(IDiscordClient client, Scope[] scopes, String clientID, String clientSecret,
-			String redirectUrl, String redirectPath, HttpServerOptions options) {
+						String redirectUrl, String redirectPath, HttpServerOptions options) {
 		this.scopes = Arrays.stream(scopes).map(Scope::getName).collect(Collectors.toList()).toArray(new String[0]);
 		this.client = client;
 		this.redirectUrl = redirectUrl;
 		this.options = options;
+		this.oauthUserCache = new Cache<>((DiscordClientImpl) client, IOAuthUser.class);
 
 		vertx = Vertx.vertx();
 		server = vertx.createHttpServer(options);
@@ -56,9 +64,9 @@ public class DiscordOAuth implements IDiscordOAuth {
 
 		router.get(redirectPath).handler(context -> {
 			MultiMap params = context.request().params();
-			if(params.contains("error"))
+			if (params.contains("error"))
 				Discord4J.LOGGER.error("Error! " + params.get("error"));
-			else if(params.contains("code")) {
+			else if (params.contains("code")) {
 				oauth2Auth.getToken(new JsonObject().put("code", params.get("code")).put("redirect_uri", redirectUrl), res -> {
 					if (res.failed()) {
 						Discord4J.LOGGER.error("Result failed!");
@@ -68,8 +76,12 @@ public class DiscordOAuth implements IDiscordOAuth {
 						String accessToken = res.result().principal().getString("access_token");
 						Discord4J.LOGGER.debug("OAuth token! " + accessToken);
 						RequestBuffer.request(() -> {
-							UserObject user = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", UserObject.class, new BasicNameValuePair("Authorization", "Bearer " + accessToken));
-							context.response().end("Something went right! Hello " + user.username);
+							IUser user = DiscordUtils.getUserFromJSON(client.getShards().get(0), Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", UserObject.class, new BasicNameValuePair("Authorization", "Bearer " + accessToken)));
+							IOAuthUser oauth = new OAuthUser(user, accessToken);
+							oauthUserCache.put(oauth);
+
+							context.response().end("Something went right! Hello " + oauth.getName());
+							client.getDispatcher().dispatch(new OAuthUserAuthorized(oauth));
 						});
 					}
 				});
@@ -83,11 +95,17 @@ public class DiscordOAuth implements IDiscordOAuth {
 	public String buildAuthUrl() {
 		return oauth2Auth.authorizeURL(new JsonObject()
 				.put("redirect_uri", redirectUrl)
-		.put("scope", String.join("+", scopes)));
+				.put("scope", String.join("+", scopes)));
 	}
 
-	public String getAccessTokenForUser(IUser user) {
-		return null;
+	@Override
+	public IOAuthUser getOAuthUser(IUser user) {
+		return oauthUserCache.get(user.getLongID());
+	}
+
+	@Override
+	public IOAuthUser getOAuthUserForID(long id) {
+		return oauthUserCache.get(id);
 	}
 
 	@Override
