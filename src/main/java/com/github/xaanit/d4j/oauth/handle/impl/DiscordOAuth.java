@@ -2,6 +2,7 @@ package com.github.xaanit.d4j.oauth.handle.impl;
 
 import com.github.xaanit.d4j.oauth.Scope;
 import com.github.xaanit.d4j.oauth.handle.IDiscordOAuth;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
@@ -10,11 +11,17 @@ import io.vertx.ext.auth.oauth2.OAuth2Auth;
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions;
 import io.vertx.ext.auth.oauth2.OAuth2FlowType;
 import io.vertx.ext.web.Router;
+import org.apache.http.message.BasicNameValuePair;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import sx.blah.discord.api.IDiscordClient;
+import sx.blah.discord.api.internal.DiscordClientImpl;
 import sx.blah.discord.api.internal.DiscordEndpoints;
+import sx.blah.discord.api.internal.DiscordUtils;
+import sx.blah.discord.api.internal.json.objects.UserObject;
 import sx.blah.discord.handle.obj.IUser;
+import sx.blah.discord.util.DiscordException;
+import sx.blah.discord.util.RequestBuffer;
 
 public class DiscordOAuth implements IDiscordOAuth {
 	private final String[] scopes;
@@ -45,7 +52,31 @@ public class DiscordOAuth implements IDiscordOAuth {
 				.setAuthorizationPath("/oauth2/authorize")
 		);
 
-		router.get(redirectPath).handler(context -> {}); //The user did a thing!
+		router.get(redirectPath).handler(context -> {
+			MultiMap params = context.request().params();
+			if(params.contains("error"))
+				System.out.println("Error! " + params.get("error"));
+			else if(params.contains("code")) {
+				oauth2Auth.getToken(new JsonObject().put("code", params.get("code")).put("redirect_uri", redirectUrl), res -> {
+				if (res.failed()) {
+					System.out.println("Result failed!");
+					res.cause().printStackTrace();
+					context.response().end("Something went wrong!");
+				} else {
+					String accessToken = res.result().principal().getString("access_token");
+					System.out.println("OAuth token! " + accessToken);
+					RequestBuffer.request(() -> {
+						try {
+							//UserObject user = DiscordUtils.GSON.fromJson(((DiscordClientImpl) client).REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", new BasicNameValuePair("Authorization", "Bearer " + accessToken)), UserObject.class);
+							//context.response().end("Something went right! Hello " + user.username);
+						} catch (DiscordException e) {
+							e.printStackTrace();
+						}
+					});
+				}
+			});
+			}
+		}); //The user did a thing!
 
 		server.requestHandler(router::accept);
 		server.listen();

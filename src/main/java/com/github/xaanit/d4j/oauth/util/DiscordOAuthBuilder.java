@@ -12,6 +12,7 @@ import sx.blah.discord.api.IDiscordClient;
 public class DiscordOAuthBuilder {
 	private Scope[] scopes = null;
 	private String clientID = null;
+	private String clientSecret = null;
 	private String redirectUrl = null;
 	private String redirectPath = null;
 	private HttpServerOptions serverOptions = new HttpServerOptions();
@@ -42,6 +43,11 @@ public class DiscordOAuthBuilder {
 		return this;
 	}
 
+	public DiscordOAuthBuilder withClientSecret(String clientSecret) {
+		this.clientSecret = clientSecret;
+		return this;
+	}
+
 	/**
 	 * Sets the redirect URL for the AuthURL.
 	 *
@@ -62,6 +68,8 @@ public class DiscordOAuthBuilder {
 			throw new IllegalArgumentException("No scopes provided!");
 		if(clientID == null)
 			throw new IllegalArgumentException("No client ID provided");
+		if(clientSecret == null)
+			throw new IllegalArgumentException("No client secret provided!");
 		if(redirectUrl == null)
 			throw new IllegalArgumentException("No redirect URL provided!");
 		if(redirectPath == null) {
@@ -70,7 +78,7 @@ public class DiscordOAuthBuilder {
 			redirectPath = redirectUrl.substring(redirectUrl.lastIndexOf('/'));
 		}
 
-		DiscordOAuth oauth = new DiscordOAuth(client, scopes, clientID, "", redirectUrl, redirectPath, serverOptions);
+		DiscordOAuth oauth = new DiscordOAuth(client, scopes, clientID, clientSecret, redirectUrl, redirectPath, serverOptions);
 
 		return oauth;
 	}
