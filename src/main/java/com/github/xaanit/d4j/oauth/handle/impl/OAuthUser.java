@@ -1,25 +1,18 @@
 package com.github.xaanit.d4j.oauth.handle.impl;
 
 import com.github.xaanit.d4j.oauth.handle.IOAuthUser;
-import java.time.LocalDateTime;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.IShard;
-import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IPresence;
-import sx.blah.discord.handle.obj.IPrivateChannel;
-import sx.blah.discord.handle.obj.IRole;
-import sx.blah.discord.handle.obj.IUser;
-import sx.blah.discord.handle.obj.IVoiceChannel;
-import sx.blah.discord.handle.obj.IVoiceState;
-import sx.blah.discord.handle.obj.Permissions;
-import sx.blah.discord.handle.obj.Status;
+import sx.blah.discord.handle.obj.*;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RateLimitException;
 import sx.blah.discord.util.cache.LongMap;
+
+import java.time.LocalDateTime;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Jacob on 4/21/2017.

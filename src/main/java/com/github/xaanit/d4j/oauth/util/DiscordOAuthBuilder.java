@@ -64,15 +64,15 @@ public class DiscordOAuthBuilder {
 	}
 
 	public IDiscordOAuth build() {
-		if(scopes == null)
+		if (scopes == null)
 			throw new IllegalArgumentException("No scopes provided!");
-		if(clientID == null)
+		if (clientID == null)
 			throw new IllegalArgumentException("No client ID provided");
-		if(clientSecret == null)
+		if (clientSecret == null)
 			throw new IllegalArgumentException("No client secret provided!");
-		if(redirectUrl == null)
+		if (redirectUrl == null)
 			throw new IllegalArgumentException("No redirect URL provided!");
-		if(redirectPath == null) {
+		if (redirectPath == null) {
 			if (redirectUrl.lastIndexOf('/') == -1)
 				throw new IllegalArgumentException("No redirect path provided!");
 			redirectPath = redirectUrl.substring(redirectUrl.lastIndexOf('/'));
