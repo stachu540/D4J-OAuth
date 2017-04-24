@@ -1,5 +1,7 @@
 package com.github.xaanit.d4j.oauth.handle;
 
+import io.vertx.core.http.HttpServer;
+import io.vertx.ext.web.Router;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IUser;
 
@@ -22,4 +24,8 @@ public interface IDiscordOAuth {
 	 * @return The client
 	 */
 	IDiscordClient getClient();
+
+	HttpServer getHttpServer();
+
+	Router getRouter();
 }

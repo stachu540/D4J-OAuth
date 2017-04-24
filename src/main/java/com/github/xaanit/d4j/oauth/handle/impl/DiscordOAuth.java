@@ -33,9 +33,7 @@ public class DiscordOAuth implements IDiscordOAuth {
 	private final String[] scopes;
 	private final String redirectUrl;
 	private final IDiscordClient client;
-	private final HttpServerOptions options;
 	private final OAuth2Auth oauth2Auth;
-	private final Vertx vertx;
 	private final HttpServer server;
 	private final Router router;
 	private final Cache<IOAuthUser> oauthUserCache;
@@ -46,10 +44,9 @@ public class DiscordOAuth implements IDiscordOAuth {
 		this.scopes = Arrays.stream(scopes).map(Scope::getName).collect(Collectors.toList()).toArray(new String[0]);
 		this.client = client;
 		this.redirectUrl = redirectUrl;
-		this.options = options;
 		this.oauthUserCache = new Cache<>((DiscordClientImpl) client, IOAuthUser.class);
 
-		vertx = Vertx.vertx();
+		Vertx vertx = Vertx.vertx();
 		server = vertx.createHttpServer(options);
 		router = Router.router(vertx);
 
@@ -111,5 +108,15 @@ public class DiscordOAuth implements IDiscordOAuth {
 	@Override
 	public IDiscordClient getClient() {
 		return client;
+	}
+
+	@Override
+	public HttpServer getHttpServer() {
+		return server;
+	}
+
+	@Override
+	public Router getRouter() {
+		return router;
 	}
 }
