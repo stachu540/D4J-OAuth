@@ -1,6 +1,5 @@
 package com.github.xaanit.d4j.oauth.handle;
 
-import com.github.xaanit.d4j.oauth.Scope;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IUser;
 
@@ -21,5 +20,10 @@ public interface IDiscordOAuth {
 	 */
 	String getAccessTokenForUser(IUser user);
 
+	/**
+	 * Gets the {@link IDiscordClient} client instance.
+	 *
+	 * @return The client
+	 */
 	IDiscordClient getClient();
 }

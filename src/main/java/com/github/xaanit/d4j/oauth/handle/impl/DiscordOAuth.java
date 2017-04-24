@@ -11,19 +11,17 @@ import io.vertx.ext.auth.oauth2.OAuth2Auth;
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions;
 import io.vertx.ext.auth.oauth2.OAuth2FlowType;
 import io.vertx.ext.web.Router;
-import org.apache.http.message.BasicNameValuePair;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import sx.blah.discord.Discord4J;
 import sx.blah.discord.api.IDiscordClient;
-import sx.blah.discord.api.internal.DiscordClientImpl;
 import sx.blah.discord.api.internal.DiscordEndpoints;
-import sx.blah.discord.api.internal.DiscordUtils;
-import sx.blah.discord.api.internal.json.objects.UserObject;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
 public class DiscordOAuth implements IDiscordOAuth {
+
 	private final String[] scopes;
 	private final String redirectUrl;
 	private final IDiscordClient client;
@@ -33,8 +31,10 @@ public class DiscordOAuth implements IDiscordOAuth {
 	private final HttpServer server;
 	private final Router router;
 
-	public DiscordOAuth(IDiscordClient client, Scope[] scopes, String clientID, String clientSecret, String redirectUrl, String redirectPath, HttpServerOptions options) {
-		this.scopes = Arrays.stream(scopes).map(Scope::getName).collect(Collectors.toList()).toArray(new String[0]);
+	public DiscordOAuth(IDiscordClient client, Scope[] scopes, String clientID, String clientSecret,
+			String redirectUrl, String redirectPath, HttpServerOptions options) {
+		this.scopes = Arrays.stream(scopes).map(Scope::getName).collect(Collectors.toList())
+				.toArray(new String[0]);
 		this.client = client;
 		this.redirectUrl = redirectUrl;
 		this.options = options;
@@ -54,27 +54,29 @@ public class DiscordOAuth implements IDiscordOAuth {
 
 		router.get(redirectPath).handler(context -> {
 			MultiMap params = context.request().params();
-			if(params.contains("error"))
-				System.out.println("Error! " + params.get("error"));
-			else if(params.contains("code")) {
-				oauth2Auth.getToken(new JsonObject().put("code", params.get("code")).put("redirect_uri", redirectUrl), res -> {
-				if (res.failed()) {
-					System.out.println("Result failed!");
-					res.cause().printStackTrace();
-					context.response().end("Something went wrong!");
-				} else {
-					String accessToken = res.result().principal().getString("access_token");
-					System.out.println("OAuth token! " + accessToken);
-					RequestBuffer.request(() -> {
-						try {
-							//UserObject user = DiscordUtils.GSON.fromJson(((DiscordClientImpl) client).REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", new BasicNameValuePair("Authorization", "Bearer " + accessToken)), UserObject.class);
-							//context.response().end("Something went right! Hello " + user.username);
-						} catch (DiscordException e) {
-							e.printStackTrace();
-						}
-					});
-				}
-			});
+			if(params.contains("error")) {
+				Discord4J.LOGGER.error("Error! " + params.get("error"));
+			} else if(params.contains("code")) {
+				oauth2Auth.getToken(
+						new JsonObject().put("code", params.get("code")).put("redirect_uri", redirectUrl),
+						res -> {
+							if(res.failed()) {
+								Discord4J.LOGGER.error("Result failed!");
+								res.cause().printStackTrace();
+								context.response().end("Something went wrong!");
+							} else {
+								String accessToken = res.result().principal().getString("access_token");
+								Discord4J.LOGGER.error("OAuth token! " + accessToken);
+								RequestBuffer.request(() -> {
+									try {
+										//UserObject user = DiscordUtils.GSON.fromJson(((DiscordClientImpl) client).REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", new BasicNameValuePair("Authorization", "Bearer " + accessToken)), UserObject.class);
+										//context.response().end("Something went right! Hello " + user.username);
+									} catch(DiscordException e) {
+										e.printStackTrace();
+									}
+								});
+							}
+						});
 			}
 		}); //The user did a thing!
 
@@ -85,7 +87,7 @@ public class DiscordOAuth implements IDiscordOAuth {
 	public String buildAuthUrl() {
 		return oauth2Auth.authorizeURL(new JsonObject()
 				.put("redirect_uri", redirectUrl)
-		.put("scope", String.join("+", scopes)));
+				.put("scope", String.join("+", scopes)));
 	}
 
 	public String getAccessTokenForUser(IUser user) {
