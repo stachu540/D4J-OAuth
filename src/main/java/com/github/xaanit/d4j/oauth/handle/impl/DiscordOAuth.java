@@ -10,12 +10,11 @@ import io.vertx.ext.auth.oauth2.OAuth2Auth;
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions;
 import io.vertx.ext.auth.oauth2.OAuth2FlowType;
 import io.vertx.ext.web.Router;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.DiscordEndpoints;
 import sx.blah.discord.handle.obj.IUser;
-
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public class DiscordOAuth implements IDiscordOAuth {
 	private final String[] scopes;

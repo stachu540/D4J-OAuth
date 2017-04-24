@@ -1,21 +1,31 @@
 package com.github.xaanit.d4j.oauth.handle.impl;
 
 import com.github.xaanit.d4j.oauth.handle.IOAuthUser;
+import java.time.LocalDateTime;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.IShard;
-import sx.blah.discord.handle.obj.*;
+import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IPresence;
+import sx.blah.discord.handle.obj.IPrivateChannel;
+import sx.blah.discord.handle.obj.IRole;
+import sx.blah.discord.handle.obj.IUser;
+import sx.blah.discord.handle.obj.IVoiceChannel;
+import sx.blah.discord.handle.obj.IVoiceState;
+import sx.blah.discord.handle.obj.Permissions;
+import sx.blah.discord.handle.obj.Status;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RateLimitException;
-
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
+import sx.blah.discord.util.cache.LongMap;
 
 /**
  * Created by Jacob on 4/21/2017.
  */
 public class OAuthUser implements IOAuthUser {
+
 	private final IUser user;
 	private final String accessToken;
 
@@ -45,7 +55,7 @@ public class OAuthUser implements IOAuthUser {
 	}
 
 	@Override
-	public Presences getPresence() {
+	public IPresence getPresence() {
 		return user.getPresence();
 	}
 
@@ -80,8 +90,23 @@ public class OAuthUser implements IOAuthUser {
 	}
 
 	@Override
-	public Optional<String> getNicknameForGuild(IGuild guild) {
+	public String getNicknameForGuild(IGuild guild) {
 		return user.getNicknameForGuild(guild);
+	}
+
+	@Override
+	public IVoiceState getVoiceStateForGuild(IGuild guild) {
+		return user.getVoiceStateForGuild(guild);
+	}
+
+	@Override
+	public Map<String, IVoiceState> getVoiceStates() {
+		return user.getVoiceStates();
+	}
+
+	@Override
+	public LongMap<IVoiceState> getVoiceStatesLong() {
+		return user.getVoiceStatesLong();
 	}
 
 	@Override
@@ -90,14 +115,11 @@ public class OAuthUser implements IOAuthUser {
 	}
 
 	@Override
-	public void moveToVoiceChannel(IVoiceChannel newChannel) throws DiscordException, RateLimitException, MissingPermissionsException {
+	public void moveToVoiceChannel(IVoiceChannel newChannel)
+			throws DiscordException, RateLimitException, MissingPermissionsException {
 		user.moveToVoiceChannel(newChannel);
 	}
 
-	@Override
-	public List<IVoiceChannel> getConnectedVoiceChannels() {
-		return user.getConnectedVoiceChannels();
-	}
 
 	@Override
 	public IPrivateChannel getOrCreatePMChannel() throws RateLimitException, DiscordException {
@@ -105,38 +127,30 @@ public class OAuthUser implements IOAuthUser {
 	}
 
 	@Override
-	public boolean isDeaf(IGuild guild) {
-		return user.isDeaf(guild);
-	}
-
-	@Override
-	public boolean isMuted(IGuild guild) {
-		return user.isMuted(guild);
-	}
-
-	@Override
-	public boolean isDeafLocally() {
-		return user.isDeafLocally();
-	}
-
-	@Override
-	public boolean isMutedLocally() {
-		return user.isMutedLocally();
-	}
-
-	@Override
-	public void addRole(IRole role) throws MissingPermissionsException, RateLimitException, DiscordException {
+	public void addRole(IRole role)
+			throws MissingPermissionsException, RateLimitException, DiscordException {
 		user.addRole(role);
 	}
 
 	@Override
-	public void removeRole(IRole role) throws MissingPermissionsException, RateLimitException, DiscordException {
+	public void removeRole(IRole role)
+			throws MissingPermissionsException, RateLimitException, DiscordException {
 		user.removeRole(role);
 	}
 
 	@Override
 	public String getID() {
 		return user.getID();
+	}
+
+	@Override
+	public long getLongID() {
+		return user.getLongID();
+	}
+
+	@Override
+	public String getStringID() {
+		return user.getStringID();
 	}
 
 	@Override
@@ -147,6 +161,11 @@ public class OAuthUser implements IOAuthUser {
 	@Override
 	public IShard getShard() {
 		return user.getShard();
+	}
+
+	@Override
+	public LocalDateTime getCreationDate() {
+		return user.getCreationDate();
 	}
 
 	@Override

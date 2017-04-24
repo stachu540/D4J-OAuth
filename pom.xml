@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.xaanit</groupId>
-    <artifactId>D4J-OAuth</artifactId>
-    <version>0.1</version>
+	<groupId>com.xaanit</groupId>
+	<artifactId>D4J-OAuth</artifactId>
+	<version>0.1</version>
 
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.github.austinv11</groupId>
-            <artifactId>Discord4j</artifactId>
-            <version>2.8.0</version>
-            <scope>provided</scope>
-        </dependency>
+	<dependencies>
+		<dependency>
+			<groupId>com.github.austinv11</groupId>
+			<artifactId>Discord4j</artifactId>
+			<version>2.8.0</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -34,5 +34,5 @@
 			<artifactId>vertx-auth-oauth2</artifactId>
 			<version>3.4.1</version>
 		</dependency>
-    </dependencies>
+	</dependencies>
 </project>

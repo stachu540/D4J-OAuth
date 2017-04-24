@@ -1,5 +1,6 @@
-package com.github.xaanit.d4j.oauth;
+package com.github.xaanit.d4j.oauth.util;
 
+import com.github.xaanit.d4j.oauth.Scope;
 import com.github.xaanit.d4j.oauth.handle.IDiscordOAuth;
 import com.github.xaanit.d4j.oauth.handle.impl.DiscordOAuth;
 import io.vertx.core.http.HttpServerOptions;
