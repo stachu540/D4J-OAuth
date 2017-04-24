@@ -35,7 +35,7 @@ public class DiscordOAuth implements IDiscordOAuth {
 	private final Router router;
 
 	public DiscordOAuth(IDiscordClient client, Scope[] scopes, String clientID, String clientSecret,
-			String redirectUrl, String redirectPath, HttpServerOptions options) {
+						String redirectUrl, String redirectPath, HttpServerOptions options) {
 		this.scopes = Arrays.stream(scopes).map(Scope::getName).collect(Collectors.toList()).toArray(new String[0]);
 		this.client = client;
 		this.redirectUrl = redirectUrl;
@@ -56,9 +56,9 @@ public class DiscordOAuth implements IDiscordOAuth {
 
 		router.get(redirectPath).handler(context -> {
 			MultiMap params = context.request().params();
-			if(params.contains("error"))
+			if (params.contains("error"))
 				Discord4J.LOGGER.error("Error! " + params.get("error"));
-			else if(params.contains("code")) {
+			else if (params.contains("code")) {
 				oauth2Auth.getToken(new JsonObject().put("code", params.get("code")).put("redirect_uri", redirectUrl), res -> {
 					if (res.failed()) {
 						Discord4J.LOGGER.error("Result failed!");
@@ -83,7 +83,7 @@ public class DiscordOAuth implements IDiscordOAuth {
 	public String buildAuthUrl() {
 		return oauth2Auth.authorizeURL(new JsonObject()
 				.put("redirect_uri", redirectUrl)
-		.put("scope", String.join("+", scopes)));
+				.put("scope", String.join("+", scopes)));
 	}
 
 	public String getAccessTokenForUser(IUser user) {
