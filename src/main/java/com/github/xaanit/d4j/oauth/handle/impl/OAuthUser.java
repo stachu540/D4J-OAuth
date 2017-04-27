@@ -1,13 +1,15 @@
 package com.github.xaanit.d4j.oauth.handle.impl;
 
+import com.github.xaanit.d4j.oauth.Scope;
 import com.github.xaanit.d4j.oauth.handle.IDiscordOAuth;
 import com.github.xaanit.d4j.oauth.handle.IOAuthUser;
+import com.github.xaanit.d4j.oauth.internal.json.objects.OAuthUserObject;
+import com.github.xaanit.d4j.oauth.util.MissingScopeException;
 import org.apache.http.message.BasicNameValuePair;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.IShard;
 import sx.blah.discord.api.internal.DiscordEndpoints;
 import sx.blah.discord.api.internal.Requests;
-import sx.blah.discord.api.internal.json.objects.UserObject;
 import sx.blah.discord.handle.obj.*;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.MissingPermissionsException;
@@ -22,7 +24,7 @@ import java.util.Map;
 /**
  * Created by Jacob on 4/21/2017.
  */
-public  class OAuthUser implements IOAuthUser {
+public class OAuthUser implements IOAuthUser {
 
 	private final IUser user;
 	private final String accessToken;
@@ -188,8 +190,10 @@ public  class OAuthUser implements IOAuthUser {
 
 	@Override
 	public boolean is2FAEnabled() {
-		UserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "/users/@me", UserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
-		return false;
+		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
+		if (o == null)
+			throw new MissingScopeException(Scope.IDENTIFY);
+		return o.mfa_enabled;
 	}
 
 	@Override
