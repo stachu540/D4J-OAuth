@@ -38,11 +38,11 @@ public interface IOAuthUser extends IUser {
 	boolean is2FAEnabled();
 
 	/**
-	 * Gets the list of {@link IGuild} objects that the user is connected to.
+	 * Gets the list of {@link IUserGuild} objects that the user is connected to.
 	 *
 	 * @return The list of guilds
 	 */
-	List<IGuild> getGuilds();
+	List<IUserGuild> getGuilds();
 
 	/**
 	 * Attempts to join a guild as the user.
