@@ -140,8 +140,6 @@ public class OAuthUser implements IOAuthUser {
 
 	@Override
 	public String getID() {
-		IMessage m = null;
-		m.addReaction("");
 		return user.getID();
 	}
 

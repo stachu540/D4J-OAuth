@@ -1,11 +1,9 @@
 package com.github.xaanit.d4j.oauth.internal.json.objects;
 
-import sx.blah.discord.api.internal.json.objects.GuildObject;
-
 /**
  * Represents a json OAuth user guild
  */
-public class UserGuildObject extends GuildObject {
+public class UserGuildObject  {
 
 	/**
 	 * Gets the long ID of the guild.
