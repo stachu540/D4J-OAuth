@@ -3,41 +3,30 @@ package com.github.xaanit.d4j.oauth.internal.json.objects;
 /**
  * Represents a json OAuth user guild
  */
-public class UserGuildObject  {
+public class UserGuildObject {
 
 	/**
-	 * Gets the long ID of the guild.
-	 * Required scope: {@link com.github.xaanit.d4j.oauth.Scope Scope.GUILDS}
+	 * The ID of the guild.
 	 */
-	public long getLongID;
+	public String id;
 
 	/**
-	 * Gets the String ID of the guild.
-	 * Required scope: {@link com.github.xaanit.d4j.oauth.Scope Scope.GUILDS}
+	 * Name of the guild.
 	 */
-	public String getStringID;
+	public String name;
 
 	/**
-	 * Gets the name of the guild.
-	 * Required scope: {@link com.github.xaanit.d4j.oauth.Scope Scope.GUILDS}
+	 * Icon hash of the guild.
 	 */
-	public String getName;
+	public String icon;
 
 	/**
-	 * Gets the Icon URL of the guild.
-	 * Required scope: {@link com.github.xaanit.d4j.oauth.Scope Scope.GUILDS}
+	 * If the user is the owner of the guild.
 	 */
-	public String getIconURL;
+	public Boolean owner;
 
 	/**
-	 * Returns if the user is the owner of the guild.
-	 * Required scope: {@link com.github.xaanit.d4j.oauth.Scope Scope.GUILDS}
+	 * Bitwise integer of the users enabled/disabled permissions.
 	 */
-	public Boolean isOwner;
-
-	/**
-	 * Gets the bitwise integer of the users enabled/disabled permissions
-	 * Required scope: {@link com.github.xaanit.d4j.oauth.Scope Scope.GUILDS}
-	 */
-	public int getPermissions;
+	public int permissions;
 }
