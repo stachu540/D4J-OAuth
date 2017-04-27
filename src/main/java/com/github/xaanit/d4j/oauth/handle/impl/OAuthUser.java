@@ -1,8 +1,13 @@
 package com.github.xaanit.d4j.oauth.handle.impl;
 
+import com.github.xaanit.d4j.oauth.handle.IDiscordOAuth;
 import com.github.xaanit.d4j.oauth.handle.IOAuthUser;
+import org.apache.http.message.BasicNameValuePair;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.IShard;
+import sx.blah.discord.api.internal.DiscordEndpoints;
+import sx.blah.discord.api.internal.Requests;
+import sx.blah.discord.api.internal.json.objects.UserObject;
 import sx.blah.discord.handle.obj.*;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.MissingPermissionsException;
@@ -17,7 +22,7 @@ import java.util.Map;
 /**
  * Created by Jacob on 4/21/2017.
  */
-public class OAuthUser implements IOAuthUser {
+public  class OAuthUser implements IOAuthUser {
 
 	private final IUser user;
 	private final String accessToken;
@@ -169,5 +174,36 @@ public class OAuthUser implements IOAuthUser {
 	@Override
 	public String getAccessToken() {
 		return accessToken;
+	}
+
+	@Override
+	public List<String> getConnections() {
+		return null;
+	}
+
+	@Override
+	public String getEmail() {
+		return null;
+	}
+
+	@Override
+	public boolean is2FAEnabled() {
+		UserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "/users/@me", UserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
+		return false;
+	}
+
+	@Override
+	public List<IGuild> getGuilds() {
+		return null;
+	}
+
+	@Override
+	public boolean joinGuild(IGuild guild) {
+		return false;
+	}
+
+	@Override
+	public boolean makeGroupPM(IDiscordOAuth[] users) {
+		return false;
 	}
 }
