@@ -5,6 +5,7 @@ import com.github.xaanit.d4j.oauth.handle.IDiscordOAuth;
 import com.github.xaanit.d4j.oauth.handle.IOAuthUser;
 import com.github.xaanit.d4j.oauth.handle.IUserGuild;
 import com.github.xaanit.d4j.oauth.internal.json.objects.OAuthUserObject;
+import com.github.xaanit.d4j.oauth.internal.json.objects.UserGuildObject;
 import com.github.xaanit.d4j.oauth.util.MissingScopeException;
 import org.apache.http.message.BasicNameValuePair;
 import sx.blah.discord.api.IDiscordClient;
@@ -18,9 +19,11 @@ import sx.blah.discord.util.RateLimitException;
 import sx.blah.discord.util.cache.LongMap;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by Jacob on 4/21/2017.
@@ -202,9 +205,9 @@ public class OAuthUser implements IOAuthUser {
 
 	@Override
 	public List<IUserGuild> getGuilds() {
-/**        List<IUserGuild> o = Arrays.stream(Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/guilds", UserGuildObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken))).map(j -> j.ge).collect(Collectors.toList());
- if (o == null)
- throw new MissingScopeException(Scope.GUILDS);**/
+		List<IUserGuild> o = Arrays.stream(Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/guilds", UserGuildObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken))).map(g -> new UserGuild(g.id, g.name, g.icon, g.owner, g.permissions, this)).collect(Collectors.toList());
+		if (o == null)
+			throw new MissingScopeException(Scope.GUILDS);
 		return null;
 	}
 
