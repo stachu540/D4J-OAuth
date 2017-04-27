@@ -140,6 +140,8 @@ public class OAuthUser implements IOAuthUser {
 
 	@Override
 	public String getID() {
+		IMessage m = null;
+		m.addReaction("");
 		return user.getID();
 	}
 
@@ -185,7 +187,10 @@ public class OAuthUser implements IOAuthUser {
 
 	@Override
 	public String getEmail() {
-		return null;
+		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
+		if (o == null)
+			throw new MissingScopeException(Scope.IDENTIFY);
+		return o.email;
 	}
 
 	@Override
@@ -198,6 +203,9 @@ public class OAuthUser implements IOAuthUser {
 
 	@Override
 	public List<IGuild> getGuilds() {
+		/**List<IGuild> o = Arrays.stream(Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/guilds", GuildObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken))).map(guildObj -> DiscordUtils.getGuildFromJSON(guildObj)).collect(Collectors.toList());
+		 if (o == null)
+		 throw new MissingScopeException(Scope.IDENTIFY);**/
 		return null;
 	}
 
