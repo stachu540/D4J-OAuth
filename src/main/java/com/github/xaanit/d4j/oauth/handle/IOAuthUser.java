@@ -17,11 +17,11 @@ public interface IOAuthUser extends IUser {
 	String getAccessToken();
 
 	/**
-	 * Gets the list of {@link String} connections the user has.
+	 * Gets the list of {@link IConnection} connections the user has.
 	 *
 	 * @return The list of connections
 	 */
-	List<String> getConnections();
+	List<IConnection> getConnections();
 
 	/**
 	 * Gets the email of the user.

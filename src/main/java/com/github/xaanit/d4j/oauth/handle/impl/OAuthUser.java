@@ -1,6 +1,7 @@
 package com.github.xaanit.d4j.oauth.handle.impl;
 
 import com.github.xaanit.d4j.oauth.Scope;
+import com.github.xaanit.d4j.oauth.handle.IConnection;
 import com.github.xaanit.d4j.oauth.handle.IDiscordOAuth;
 import com.github.xaanit.d4j.oauth.handle.IOAuthUser;
 import com.github.xaanit.d4j.oauth.handle.IUserGuild;
@@ -183,7 +184,7 @@ public class OAuthUser implements IOAuthUser {
 	}
 
 	@Override
-	public List<String> getConnections() {
+	public List<IConnection> getConnections() {
 		return null;
 	}
 
