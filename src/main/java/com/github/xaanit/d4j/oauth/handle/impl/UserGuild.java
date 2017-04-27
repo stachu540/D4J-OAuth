@@ -2,7 +2,6 @@ package com.github.xaanit.d4j.oauth.handle.impl;
 
 import com.github.xaanit.d4j.oauth.handle.IOAuthUser;
 import com.github.xaanit.d4j.oauth.handle.IUserGuild;
-import com.github.xaanit.d4j.oauth.internal.json.objects.UserGuildObject;
 import sx.blah.discord.handle.obj.Permissions;
 
 import java.util.EnumSet;
@@ -10,7 +9,7 @@ import java.util.EnumSet;
 /**
  * Created by Jacob on 4/27/2017.
  */
-public class UserGuild extends UserGuildObject implements IUserGuild {
+public class UserGuild implements IUserGuild {
 
 	private String id;
 	private String name;

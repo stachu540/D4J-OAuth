@@ -8,6 +8,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.oauth2.OAuth2Auth;
 import io.vertx.ext.auth.oauth2.OAuth2ClientOptions;
@@ -27,13 +28,14 @@ import sx.blah.discord.util.RequestBuffer;
 import sx.blah.discord.util.cache.Cache;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class DiscordOAuth implements IDiscordOAuth {
 
-	private final String[] scopes;
+	private final List<String> scopes;
 	private final String redirectUrl;
 	private final IDiscordClient client;
 	private final OAuth2Auth oauth2Auth;
@@ -43,7 +45,7 @@ public class DiscordOAuth implements IDiscordOAuth {
 
 	public DiscordOAuth(IDiscordClient client, Scope[] scopes, String clientID, String clientSecret,
 						String redirectUrl, String redirectPath, HttpServerOptions options, Consumer<RoutingContext> onFail, BiConsumer<RoutingContext, IOAuthUser> onSuccess) {
-		this.scopes = Arrays.stream(scopes).map(Scope::getName).collect(Collectors.toList()).toArray(new String[0]);
+		this.scopes = Arrays.stream(scopes).map(Scope::getName).collect(Collectors.toList());
 		this.client = client;
 		this.redirectUrl = redirectUrl;
 		this.oauthUserCache = new Cache<>((DiscordClientImpl) client, IOAuthUser.class);
@@ -93,9 +95,14 @@ public class DiscordOAuth implements IDiscordOAuth {
 	}
 
 	public String buildAuthUrl() {
-		return oauth2Auth.authorizeURL(new JsonObject()
-				.put("redirect_uri", redirectUrl)
-				.put("scope", String.join("+", scopes)));
+		try {
+			return oauth2Auth.authorizeURL(new JsonObject()
+					.put("redirect_uri", redirectUrl)
+					.put("scopes", new JsonArray(scopes)));
+		} catch (Throwable th) {
+			th.printStackTrace();
+		}
+		return "";
 	}
 
 	@Override

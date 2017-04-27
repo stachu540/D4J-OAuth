@@ -31,6 +31,13 @@ public interface IOAuthUser extends IUser {
 	String getEmail();
 
 	/**
+	 * Returns if the user has verified their email
+	 *
+	 * @return {@code true} if they have; otherwise {@code false}
+	 */
+	boolean isVerified();
+
+	/**
 	 * Returns if the user has Two factor authentication on
 	 *
 	 * @return {@code true} if they do; otherwise {@code false}

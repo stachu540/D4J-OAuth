@@ -191,8 +191,16 @@ public class OAuthUser implements IOAuthUser {
 	public String getEmail() {
 		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
 		if (o == null)
-			throw new MissingScopeException(Scope.IDENTIFY);
+			throw new MissingScopeException(Scope.EMAIL);
 		return o.email;
+	}
+
+	@Override
+	public boolean isVerified() {
+		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
+		if (o == null)
+			throw new MissingScopeException(Scope.EMAIL);
+		return o.verified;
 	}
 
 	@Override
@@ -208,7 +216,7 @@ public class OAuthUser implements IOAuthUser {
 		List<IUserGuild> o = Arrays.stream(Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/guilds", UserGuildObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken))).map(g -> new UserGuild(g.id, g.name, g.icon, g.owner, g.permissions, this)).collect(Collectors.toList());
 		if (o == null)
 			throw new MissingScopeException(Scope.GUILDS);
-		return null;
+		return o;
 	}
 
 	@Override
