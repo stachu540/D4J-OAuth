@@ -213,7 +213,13 @@ public class OAuthUser implements IOAuthUser {
 	}
 
 	@Override
-	public boolean joinGuild(IGuild guild) {
+	public void leaveGuild(IUserGuild guild) {
+		Requests.GENERAL_REQUESTS.DELETE.makeRequest(DiscordEndpoints.USERS + "@me/guilds/" + guild.getStringID(), OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
+		//return getGuilds().stream().filter(g -> g.getLongID() == guild.getLongID()).findAny().isPresent();
+	}
+
+	@Override
+	public boolean joinGuild(IUserGuild guild) {
 		return false;
 	}
 

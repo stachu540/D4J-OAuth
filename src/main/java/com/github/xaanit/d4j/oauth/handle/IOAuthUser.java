@@ -1,6 +1,5 @@
 package com.github.xaanit.d4j.oauth.handle;
 
-import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
 
 import java.util.List;
@@ -45,12 +44,20 @@ public interface IOAuthUser extends IUser {
 	List<IUserGuild> getGuilds();
 
 	/**
+	 * Attempts to leave a guild as the user.
+	 *
+	 * @param guild The guild to try and leave
+	 * @return {@code true} if left; otherwise {@code false}
+	 */
+	void leaveGuild(IUserGuild guild);
+
+	/**
 	 * Attempts to join a guild as the user.
 	 *
 	 * @param guild The guild to try and join
 	 * @return {@code true} if joined; otherwise {@code false}
 	 */
-	boolean joinGuild(IGuild guild);
+	boolean joinGuild(IUserGuild guild);
 
 	/**
 	 * Makes a group PM of the {@link IDiscordOAuth} users.
