@@ -7,7 +7,7 @@ import com.github.xaanit.d4j.oauth.handle.impl.OAuthUser;
  */
 public interface IConnection {
 	/**
-	 * Gets the ID of the connection
+	 * Gets the ID of the connection for the service
 	 *
 	 * @return The ID
 	 */
@@ -33,6 +33,20 @@ public interface IConnection {
 	 * @return {@code true} if it is; otherwise {@code false}
 	 */
 	boolean isRevoked();
+
+	/**
+	 * Is the connection publicly visible?
+	 *
+	 * @return true if it is, false otherwise
+	 */
+	boolean isVisible();
+
+	/**
+	 * Will Discord attempt to synchronise friends on this service?
+	 *
+	 * @return true if Discord will attempt to find friends who also have this service linked and are friends with you
+	 */
+	boolean hasFriendSyncEnabled();
 
 	/**
 	 * Gets the associated {@link OAuthUser}

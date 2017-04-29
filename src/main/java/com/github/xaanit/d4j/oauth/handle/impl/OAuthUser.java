@@ -185,10 +185,10 @@ public class OAuthUser implements IOAuthUser {
 
 	@Override
 	public List<IConnection> getConnections() {
-		List<IConnection> o = Arrays.stream(Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/connections", UserConnectionObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken))).map(c -> new Connection(this, c.id, c.name, c.type, c.revoked)).collect(Collectors.toList());
-		if (o == null)
+		UserConnectionObject[] connectionsArray = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/connections", UserConnectionObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
+		if (connectionsArray == null)
 			throw new MissingScopeException(Scope.CONNECTIONS);
-		return o;
+		return Arrays.stream(connectionsArray).map(c -> new Connection(this, c.id, c.name, c.type, c.revoked, c.visibility == 1, c.friend_sync)).collect(Collectors.toList());
 	}
 
 	@Override
@@ -217,10 +217,10 @@ public class OAuthUser implements IOAuthUser {
 
 	@Override
 	public List<IUserGuild> getGuilds() {
-		List<IUserGuild> o = Arrays.stream(Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/guilds", UserGuildObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken))).map(g -> new UserGuild(g.id, g.name, g.icon, g.owner, g.permissions, this)).collect(Collectors.toList());
-		if (o == null)
+		UserGuildObject[] userGuilds = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/guilds", UserGuildObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
+		if(userGuilds == null)
 			throw new MissingScopeException(Scope.GUILDS);
-		return o;
+		return Arrays.stream(userGuilds).map(g -> new UserGuild(g.id, g.name, g.icon, g.owner, g.permissions, this)).collect(Collectors.toList());
 	}
 
 	@Override

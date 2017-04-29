@@ -12,5 +12,9 @@ public class UserConnectionObject {
 
 	public String type;
 
-	public boolean revoked;
+	public boolean revoked = false;
+
+	public int visibility;
+
+	public boolean friend_sync;
 }
