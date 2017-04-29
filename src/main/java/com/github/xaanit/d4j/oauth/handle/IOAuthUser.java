@@ -64,13 +64,13 @@ public interface IOAuthUser extends IUser {
 	 * @param guild The guild to try and join
 	 * @return {@code true} if joined; otherwise {@code false}
 	 */
-	boolean joinGuild(IUserGuild guild);
+	void joinGuild(IUserGuild guild);
 
 	/**
-	 * Makes a group PM of the {@link IDiscordOAuth} users.
+	 * Makes a group PM of the {@link IOAuthUser} users. NOTE: There is a Discord bug. Any group DMs made by this are invisible on desktop.
 	 *
 	 * @param users The users.
 	 * @return {@code true} if successful; otherwise {@code false}
 	 */
-	boolean makeGroupPM(IDiscordOAuth[] users);
+	void makeGroupPM(IOAuthUser[] users);
 }

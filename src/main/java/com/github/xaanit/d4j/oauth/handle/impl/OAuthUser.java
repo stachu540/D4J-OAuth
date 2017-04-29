@@ -2,10 +2,10 @@ package com.github.xaanit.d4j.oauth.handle.impl;
 
 import com.github.xaanit.d4j.oauth.Scope;
 import com.github.xaanit.d4j.oauth.handle.IConnection;
-import com.github.xaanit.d4j.oauth.handle.IDiscordOAuth;
 import com.github.xaanit.d4j.oauth.handle.IOAuthUser;
 import com.github.xaanit.d4j.oauth.handle.IUserGuild;
 import com.github.xaanit.d4j.oauth.internal.json.objects.OAuthUserObject;
+import com.github.xaanit.d4j.oauth.internal.json.objects.UserConnectionObject;
 import com.github.xaanit.d4j.oauth.internal.json.objects.UserGuildObject;
 import com.github.xaanit.d4j.oauth.util.MissingScopeException;
 import org.apache.http.message.BasicNameValuePair;
@@ -185,7 +185,10 @@ public class OAuthUser implements IOAuthUser {
 
 	@Override
 	public List<IConnection> getConnections() {
-		return null;
+		List<IConnection> o = Arrays.stream(Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/connections", UserConnectionObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken))).map(c -> new Connection(this, c.id, c.name, c.type, c.revoked)).collect(Collectors.toList());
+		if (o == null)
+			throw new MissingScopeException(Scope.CONNECTIONS);
+		return o;
 	}
 
 	@Override
@@ -223,16 +226,21 @@ public class OAuthUser implements IOAuthUser {
 	@Override
 	public void leaveGuild(IUserGuild guild) {
 		Requests.GENERAL_REQUESTS.DELETE.makeRequest(DiscordEndpoints.USERS + "@me/guilds/" + guild.getStringID(), OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
-		//return getGuilds().stream().filter(g -> g.getLongID() == guild.getLongID()).findAny().isPresent();
 	}
 
 	@Override
-	public boolean joinGuild(IUserGuild guild) {
-		return false;
+	public void joinGuild(IUserGuild guild) {
+		Requests.GENERAL_REQUESTS.PUT.makeRequest(DiscordEndpoints.USERS + "@me/guilds/" + guild.getStringID() + "/" + this.user.getStringID(), OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
 	}
 
 	@Override
-	public boolean makeGroupPM(IDiscordOAuth[] users) {
-		return false;
+	public void makeGroupPM(IOAuthUser[] users) {
+		String[] authTokens = new String[users.length];
+		String[] nicks = new String[users.length];
+		for (int i = 0; i < users.length; i++) {
+			authTokens[i] = users[i].getAccessToken();
+			nicks[i] = users[i].getStringID() + ":" + users[i].getName();
+		}
+		Requests.GENERAL_REQUESTS.POST.makeRequest(DiscordEndpoints.USERS + "@me/channels", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
 	}
 }
