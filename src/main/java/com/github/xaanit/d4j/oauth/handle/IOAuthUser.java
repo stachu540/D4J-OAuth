@@ -1,7 +1,13 @@
 package com.github.xaanit.d4j.oauth.handle;
 
+import com.github.xaanit.d4j.oauth.Scope;
+import io.vertx.ext.auth.oauth2.AccessToken;
+import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IInvite;
+import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IUser;
 
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -14,6 +20,13 @@ public interface IOAuthUser extends IUser {
 	 * @return the access token
 	 */
 	String getAccessToken();
+
+	/**
+	 * Gets the full token for this user. Unlikely to be useful, unless you plan on saving tokens across instances.
+	 *
+	 * @return The full token for this user.
+	 */
+	AccessToken getToken();
 
 	/**
 	 * Gets the list of {@link IConnection} connections the user has.
@@ -51,26 +64,33 @@ public interface IOAuthUser extends IUser {
 	List<IUserGuild> getGuilds();
 
 	/**
-	 * Attempts to leave a guild as the user.
-	 *
-	 * @param guild The guild to try and leave
-	 * @return {@code true} if left; otherwise {@code false}
-	 */
-	void leaveGuild(IUserGuild guild);
-
-	/**
 	 * Attempts to join a guild as the user.
+	 * Note: This action is only performable if the app has a bundled bot, and the bot is in that guild.
+	 * The bot also requires the CREATE_INSTANT_INVITE permission
 	 *
 	 * @param guild The guild to try and join
-	 * @return {@code true} if joined; otherwise {@code false}
 	 */
-	void joinGuild(IUserGuild guild);
+	void joinGuild(IGuild guild);
 
 	/**
-	 * Makes a group PM of the {@link IOAuthUser} users. NOTE: There is a Discord bug. Any group DMs made by this are invisible on desktop.
+	 * Attempts to join a guild as the user, and set their nickname
+	 * Note: This action is only performable if the app has a bundled bot, and the bot is in that guild.
+	 * The bot also requires the CREATE_INSTANT_INVITE permission and MANAGE_NICKNAMES
 	 *
-	 * @param users The users.
-	 * @return {@code true} if successful; otherwise {@code false}
+	 * @param guild    The guild to try and join
+	 * @param nickname The nickname to set to this user upon joining
 	 */
-	void makeGroupPM(IOAuthUser[] users);
+	void joinGuild(IGuild guild, String nickname);
+
+	void joinGuild(IGuild guild, String nickname, IRole[] roles);
+
+	void joinGuild(IGuild guild, String nickname, IRole[] roles, boolean muted);
+
+	void joinGuild(IGuild guild, String nickname, IRole[] roles, boolean muted, boolean deafened);
+
+	IInvite joinGuild(IInvite invite);
+
+	IInvite joinGuildWithInviteCode(String inviteCode);
+
+	EnumSet<Scope> getAuthorizedScopes();
 }

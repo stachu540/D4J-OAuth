@@ -1,20 +1,28 @@
 package com.github.xaanit.d4j.oauth.handle.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.xaanit.d4j.oauth.Scope;
 import com.github.xaanit.d4j.oauth.handle.IConnection;
 import com.github.xaanit.d4j.oauth.handle.IOAuthUser;
 import com.github.xaanit.d4j.oauth.handle.IUserGuild;
+import com.github.xaanit.d4j.oauth.internal.json.objects.MemberAddRequest;
 import com.github.xaanit.d4j.oauth.internal.json.objects.OAuthUserObject;
 import com.github.xaanit.d4j.oauth.internal.json.objects.UserConnectionObject;
 import com.github.xaanit.d4j.oauth.internal.json.objects.UserGuildObject;
 import com.github.xaanit.d4j.oauth.util.MissingScopeException;
+import io.vertx.ext.auth.oauth2.AccessToken;
 import org.apache.http.message.BasicNameValuePair;
+import sx.blah.discord.Discord4J;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.IShard;
+import sx.blah.discord.api.internal.DiscordClientImpl;
 import sx.blah.discord.api.internal.DiscordEndpoints;
+import sx.blah.discord.api.internal.DiscordUtils;
 import sx.blah.discord.api.internal.Requests;
+import sx.blah.discord.api.internal.json.objects.InviteObject;
 import sx.blah.discord.handle.obj.*;
 import sx.blah.discord.util.DiscordException;
+import sx.blah.discord.util.LogMarkers;
 import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RateLimitException;
 import sx.blah.discord.util.cache.LongMap;
@@ -30,13 +38,14 @@ import java.util.stream.Collectors;
  * Created by Jacob on 4/21/2017.
  */
 public class OAuthUser implements IOAuthUser {
-
 	private final IUser user;
-	private final String accessToken;
+	private final AccessToken token;
+	private final EnumSet<Scope> scopes;
 
-	public OAuthUser(IUser user, String accessToken) {
+	public OAuthUser(IUser user, AccessToken token, EnumSet<Scope> scopes) {
 		this.user = user;
-		this.accessToken = accessToken;
+		this.token = token;
+		this.scopes = scopes;
 	}
 
 	@Override
@@ -175,72 +184,176 @@ public class OAuthUser implements IOAuthUser {
 
 	@Override
 	public IUser copy() {
-		return new OAuthUser(user.copy(), accessToken);
+		return new OAuthUser(user.copy(), token, scopes);
 	}
 
 	@Override
 	public String getAccessToken() {
-		return accessToken;
+		return token.principal().getString("access_token");
+	}
+
+	@Override
+	public AccessToken getToken() {
+		return token;
 	}
 
 	@Override
 	public List<IConnection> getConnections() {
-		UserConnectionObject[] connectionsArray = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/connections", UserConnectionObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
-		if (connectionsArray == null)
-			throw new MissingScopeException(Scope.CONNECTIONS);
-		return Arrays.stream(connectionsArray).map(c -> new Connection(this, c.id, c.name, c.type, c.revoked, c.visibility == 1, c.friend_sync)).collect(Collectors.toList());
+		checkScope(Scope.CONNECTIONS);
+		refreshTokenIfNeeded();
+
+		return Arrays.stream(Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/connections", UserConnectionObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.token))).map(c -> new Connection(this, c.id, c.name, c.type, c.revoked, c.visibility == 1, c.friend_sync)).collect(Collectors.toList());
 	}
 
 	@Override
 	public String getEmail() {
-		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
-		if (o == null)
-			throw new MissingScopeException(Scope.EMAIL);
+		checkScope(Scope.EMAIL);
+		refreshTokenIfNeeded();
+
+		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.token));
 		return o.email;
 	}
 
 	@Override
 	public boolean isVerified() {
-		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
-		if (o == null)
-			throw new MissingScopeException(Scope.EMAIL);
+		checkScope(Scope.EMAIL);
+		refreshTokenIfNeeded();
+
+		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.token));
 		return o.verified;
 	}
 
 	@Override
 	public boolean is2FAEnabled() {
-		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
-		if (o == null)
-			throw new MissingScopeException(Scope.IDENTIFY);
+		//No scope check here, since any call seems to allow for an identify
+		refreshTokenIfNeeded();
+
+		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.token));
 		return o.mfa_enabled;
 	}
 
 	@Override
 	public List<IUserGuild> getGuilds() {
-		UserGuildObject[] userGuilds = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/guilds", UserGuildObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
-		if(userGuilds == null)
-			throw new MissingScopeException(Scope.GUILDS);
+		checkScope(Scope.GUILDS);
+		refreshTokenIfNeeded();
+
+		UserGuildObject[] userGuilds = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/guilds", UserGuildObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.token));
 		return Arrays.stream(userGuilds).map(g -> new UserGuild(g.id, g.name, g.icon, g.owner, g.permissions, this)).collect(Collectors.toList());
 	}
 
 	@Override
-	public void leaveGuild(IUserGuild guild) {
-		Requests.GENERAL_REQUESTS.DELETE.makeRequest(DiscordEndpoints.USERS + "@me/guilds/" + guild.getStringID(), OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
-	}
+	public void joinGuild(IGuild guild) {
+		checkScope(Scope.GUILDS_JOIN);
+		refreshTokenIfNeeded();
+		DiscordUtils.checkPermissions(this.user.getClient(), guild, EnumSet.of(Permissions.CREATE_INVITE));
 
-	@Override
-	public void joinGuild(IUserGuild guild) {
-		Requests.GENERAL_REQUESTS.PUT.makeRequest(DiscordEndpoints.USERS + "@me/guilds/" + guild.getStringID() + "/" + this.user.getStringID(), OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
-	}
-
-	@Override
-	public void makeGroupPM(IOAuthUser[] users) {
-		String[] authTokens = new String[users.length];
-		String[] nicks = new String[users.length];
-		for (int i = 0; i < users.length; i++) {
-			authTokens[i] = users[i].getAccessToken();
-			nicks[i] = users[i].getStringID() + ":" + users[i].getName();
+		try {
+			((DiscordClientImpl) this.user.getClient()).REQUESTS.PATCH.makeRequest(
+					DiscordEndpoints.GUILDS + guild.getLongID() + "/members/" + user.getStringID(),
+					DiscordUtils.MAPPER_NO_NULLS.writeValueAsString(new MemberAddRequest.Builder(getAccessToken()).build()));
+		} catch (JsonProcessingException e) {
+			Discord4J.LOGGER.error(LogMarkers.HANDLE, "Discord4J Internal Exception", e);
 		}
-		Requests.GENERAL_REQUESTS.POST.makeRequest(DiscordEndpoints.USERS + "@me/channels", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.accessToken));
+	}
+
+	public void joinGuild(IGuild guild, String nickname) {
+		checkScope(Scope.GUILDS_JOIN);
+		refreshTokenIfNeeded();
+		DiscordUtils.checkPermissions(this.user.getClient(), guild, EnumSet.of(Permissions.CREATE_INVITE, Permissions.MANAGE_NICKNAMES));
+
+		try {
+			((DiscordClientImpl) this.user.getClient()).REQUESTS.PATCH.makeRequest(
+					DiscordEndpoints.GUILDS + guild.getLongID() + "/members/" + user.getStringID(),
+					DiscordUtils.MAPPER_NO_NULLS.writeValueAsString(new MemberAddRequest.Builder(getAccessToken()).nick(nickname).build()));
+		} catch (JsonProcessingException e) {
+			Discord4J.LOGGER.error(LogMarkers.HANDLE, "Discord4J Internal Exception", e);
+		}
+	}
+
+	public void joinGuild(IGuild guild, String nickname, IRole[] roles) {
+		checkScope(Scope.GUILDS_JOIN);
+		refreshTokenIfNeeded();
+		DiscordUtils.checkPermissions(this.user.getClient(), guild, EnumSet.of(Permissions.CREATE_INVITE, Permissions.MANAGE_NICKNAMES, Permissions.MANAGE_ROLES));
+
+		try {
+			((DiscordClientImpl) this.user.getClient()).REQUESTS.PUT.makeRequest(
+					DiscordEndpoints.GUILDS + guild.getLongID() + "/members/" + user.getStringID(),
+					DiscordUtils.MAPPER_NO_NULLS.writeValueAsString(new MemberAddRequest.Builder(getAccessToken()).nick(nickname).roles(roles).build()));
+		} catch (JsonProcessingException e) {
+			Discord4J.LOGGER.error(LogMarkers.HANDLE, "Discord4J Internal Exception", e);
+		}
+	}
+
+	public void joinGuild(IGuild guild, String nickname, IRole[] roles, boolean muted) {
+		checkScope(Scope.GUILDS_JOIN);
+		refreshTokenIfNeeded();
+		DiscordUtils.checkPermissions(this.user.getClient(), guild, EnumSet.of(Permissions.CREATE_INVITE, Permissions.MANAGE_NICKNAMES, Permissions.MANAGE_ROLES, Permissions.VOICE_MUTE_MEMBERS));
+
+		try {
+			((DiscordClientImpl) this.user.getClient()).REQUESTS.PATCH.makeRequest(
+					DiscordEndpoints.GUILDS + guild.getLongID() + "/members/" + user.getStringID(),
+					DiscordUtils.MAPPER_NO_NULLS.writeValueAsString(new MemberAddRequest.Builder(getAccessToken()).nick(nickname).roles(roles).mute(muted).build()));
+		} catch (JsonProcessingException e) {
+			Discord4J.LOGGER.error(LogMarkers.HANDLE, "Discord4J Internal Exception", e);
+		}
+	}
+
+	public void joinGuild(IGuild guild, String nickname, IRole[] roles, boolean muted, boolean deafened) {
+		checkScope(Scope.GUILDS_JOIN);
+		refreshTokenIfNeeded();
+		DiscordUtils.checkPermissions(this.user.getClient(), guild, EnumSet.of(Permissions.CREATE_INVITE, Permissions.MANAGE_NICKNAMES, Permissions.MANAGE_ROLES, Permissions.VOICE_MUTE_MEMBERS, Permissions.VOICE_DEAFEN_MEMBERS));
+
+		try {
+			((DiscordClientImpl) this.user.getClient()).REQUESTS.PATCH.makeRequest(
+					DiscordEndpoints.GUILDS + guild.getLongID() + "/members/" + user.getStringID(),
+					DiscordUtils.MAPPER_NO_NULLS.writeValueAsString(new MemberAddRequest.Builder(getAccessToken()).nick(nickname).roles(roles).mute(muted).deafen(deafened).build()));
+		} catch (JsonProcessingException e) {
+			Discord4J.LOGGER.error(LogMarkers.HANDLE, "Discord4J Internal Exception", e);
+		}
+	}
+
+	@Override
+	public IInvite joinGuild(IInvite invite) {
+		return joinGuildWithInviteCode(invite.getCode());
+	}
+
+	@Override
+	public IInvite joinGuildWithInviteCode(String inviteCode) {
+		checkScope(Scope.GUILDS_JOIN);
+		refreshTokenIfNeeded();
+
+		InviteObject obj = Requests.GENERAL_REQUESTS.POST.makeRequest(DiscordEndpoints.INVITE + inviteCode, InviteObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.token));
+		return DiscordUtils.getInviteFromJSON(user.getClient(), obj);
+	}
+
+	public void makeGroupPM(IOAuthUser[] users) {
+//		String[] authTokens = new String[users.length];
+//		String[] nicks = new String[users.length];
+//		for (int i = 0; i < users.length; i++) {
+//			authTokens[i] = users[i].getAccessToken();
+//			nicks[i] = users[i].getStringID() + ":" + users[i].getName();
+//		}
+//		Requests.GENERAL_REQUESTS.POST.makeRequest(DiscordEndpoints.USERS + "@me/channels", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.token));
+	}
+
+	@Override
+	public EnumSet<Scope> getAuthorizedScopes() {
+		return scopes;
+	}
+
+	private void checkScope(Scope scope) {
+		if (!scopes.contains(scope))
+			throw new MissingScopeException(scope);
+	}
+
+	private void refreshTokenIfNeeded() {
+		if (token.expired()) {
+			token.refresh(res -> {
+				if (res.failed()) {
+					System.err.println("Refreshing token failed.");
+					res.cause().printStackTrace();
+				}
+			});
+		}
 	}
 }
