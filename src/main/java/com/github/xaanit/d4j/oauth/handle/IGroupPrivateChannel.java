@@ -1,14 +1,15 @@
 package com.github.xaanit.d4j.oauth.handle;
 
-/**
- * Created by Jacob on 4/29/2017.
+import sx.blah.discord.handle.obj.IChannel;
+
+/** Turn away all ye who enter here
+ *  Unimplemented for now, since we have no idea how this works - PMs only sometimes appear on mobile
  */
-public interface IGroupPrivateChannel {
+public interface IGroupPrivateChannel extends IChannel {
 
-	void addMember();
+	void addRecipient(IOAuthUser user);
 
-	void removeMember();
+	void removeReceipient(IOAuthUser user);
 
-	IOAuthUser[] getUsers();
-
+	IOAuthUser[] getRecipients();
 }

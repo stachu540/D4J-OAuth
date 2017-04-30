@@ -7,7 +7,7 @@ import java.util.Map;
  */
 public class GroupPMObject {
 
-	String[] access_tokens;
+	public String[] access_tokens;
 
-	Map<String, String> nicks;
+	public Map<String, String> nicks;
 }
