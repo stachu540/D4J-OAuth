@@ -4,6 +4,8 @@ import com.github.xaanit.d4j.oauth.Scope;
 import com.github.xaanit.d4j.oauth.handle.IDiscordOAuth;
 import com.github.xaanit.d4j.oauth.handle.IOAuthUser;
 import com.github.xaanit.d4j.oauth.handle.impl.events.OAuthUserAuthorized;
+import com.github.xaanit.d4j.oauth.handle.impl.events.OAuthWebhookCreate;
+import com.github.xaanit.d4j.oauth.internal.json.objects.AuthorizeUserResponse;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
@@ -75,16 +77,20 @@ public class DiscordOAuth implements IDiscordOAuth {
 						res.cause().printStackTrace();
 						onFail.accept(context);
 					} else {
-						String accessToken = res.result().principal().getString("access_token");
-						Discord4J.LOGGER.debug("OAuth token! " + accessToken);
+						AuthorizeUserResponse authorize = res.result().principal().mapTo(AuthorizeUserResponse.class);
+						Discord4J.LOGGER.debug("OAuth token received");
+
 						RequestBuffer.request(() -> {
-							IUser user = DiscordUtils.getUserFromJSON(client.getShards().get(0), Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", UserObject.class, new BasicNameValuePair("Authorization", "Bearer " + accessToken)));
-							IOAuthUser oauth = new OAuthUser(user, accessToken);
+							IUser user = DiscordUtils.getUserFromJSON(client.getShards().get(0), Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", UserObject.class, new BasicNameValuePair("Authorization", "Bearer " + authorize.access_token)));
+							IOAuthUser oauth = new OAuthUser(user, res.result(), Scope.getScopes(authorize.scope));
 							oauthUserCache.put(oauth);
 
 							onSuccess.accept(context, oauth);
 							client.getDispatcher().dispatch(new OAuthUserAuthorized(oauth));
 						});
+
+						if (authorize.webhook != null)
+							client.getDispatcher().dispatch(new OAuthWebhookCreate(authorize.webhook));
 					}
 				});
 			}
