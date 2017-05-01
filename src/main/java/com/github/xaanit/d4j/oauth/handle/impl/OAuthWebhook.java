@@ -32,11 +32,6 @@ public class OAuthWebhook implements IOAuthWebhook {
 	}
 
 	@Override
-	public String getID() {
-		return this.id;
-	}
-
-	@Override
 	public long getGuildLongID() {
 		return Long.parseUnsignedLong(getGuildStringID());
 	}
@@ -64,5 +59,15 @@ public class OAuthWebhook implements IOAuthWebhook {
 	@Override
 	public String getToken() {
 		return this.token;
+	}
+
+	@Override
+	public long getLongID() {
+		return Long.parseUnsignedLong(this.id);
+	}
+
+	@Override
+	public String getStringID() {
+		return this.id;
 	}
 }

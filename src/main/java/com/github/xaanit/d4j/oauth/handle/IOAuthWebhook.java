@@ -1,11 +1,12 @@
 package com.github.xaanit.d4j.oauth.handle;
 
+import sx.blah.discord.handle.obj.IIDLinkedObject;
 import sx.blah.discord.handle.obj.IUser;
 
 /**
  * Created by Jacob on 4/30/2017.
  */
-public interface IOAuthWebhook {
+public interface IOAuthWebhook extends IIDLinkedObject {
 
 	/**
 	 * Gets the URL of the webhook
@@ -13,13 +14,6 @@ public interface IOAuthWebhook {
 	 * @return The URL
 	 */
 	String getURL();
-
-	/**
-	 * Gets the ID of the webhook
-	 *
-	 * @return The ID
-	 */
-	String getID();
 
 	/**
 	 * Gets the long ID of the webhook's guild
