@@ -1,12 +1,12 @@
 package com.github.xaanit.d4j.oauth.handle.impl;
 
-import com.github.xaanit.d4j.oauth.handle.IOauthWebhook;
+import com.github.xaanit.d4j.oauth.handle.IOAuthWebhook;
 import sx.blah.discord.handle.obj.IUser;
 
 /**
  * Created by Jacob on 4/30/2017.
  */
-public class OAuthWebhook implements IOauthWebhook {
+public class OAuthWebhook implements IOAuthWebhook {
 
 	private String url;
 	private String id;
@@ -25,7 +25,6 @@ public class OAuthWebhook implements IOauthWebhook {
 		this.avatarURL = avatarURL;
 		this.token = token;
 	}
-
 
 	@Override
 	public String getURL() {

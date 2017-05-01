@@ -5,7 +5,7 @@ import sx.blah.discord.handle.obj.IUser;
 /**
  * Created by Jacob on 4/30/2017.
  */
-public interface IOauthWebhook {
+public interface IOAuthWebhook {
 
 	/**
 	 * Gets the URL of the webhook
