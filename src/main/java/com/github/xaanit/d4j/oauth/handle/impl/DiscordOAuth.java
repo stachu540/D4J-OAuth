@@ -3,6 +3,7 @@ package com.github.xaanit.d4j.oauth.handle.impl;
 import com.github.xaanit.d4j.oauth.Scope;
 import com.github.xaanit.d4j.oauth.handle.IDiscordOAuth;
 import com.github.xaanit.d4j.oauth.handle.IOAuthUser;
+import com.github.xaanit.d4j.oauth.handle.IOAuthWebhook;
 import com.github.xaanit.d4j.oauth.handle.impl.events.OAuthUserAuthorized;
 import com.github.xaanit.d4j.oauth.handle.impl.events.OAuthWebhookCreate;
 import com.github.xaanit.d4j.oauth.internal.json.objects.AuthorizeUserResponse;
@@ -30,6 +31,7 @@ import sx.blah.discord.util.RequestBuffer;
 import sx.blah.discord.util.cache.Cache;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -44,6 +46,7 @@ public class DiscordOAuth implements IDiscordOAuth {
 	private final HttpServer server;
 	private final Router router;
 	private final Cache<IOAuthUser> oauthUserCache;
+	private final Cache<IOAuthWebhook> webhooks;
 
 	public DiscordOAuth(IDiscordClient client, Scope[] scopes, String clientID, String clientSecret,
 						String redirectUrl, String redirectPath, HttpServerOptions options, Consumer<RoutingContext> onFail, BiConsumer<RoutingContext, IOAuthUser> onSuccess) {
@@ -51,6 +54,7 @@ public class DiscordOAuth implements IDiscordOAuth {
 		this.client = client;
 		this.redirectUrl = redirectUrl;
 		this.oauthUserCache = new Cache<>((DiscordClientImpl) client, IOAuthUser.class);
+		this.webhooks = new Cache<>((DiscordClientImpl) client, IOAuthWebhook.class);
 
 		Vertx vertx = Vertx.vertx();
 		server = vertx.createHttpServer(options);
@@ -80,17 +84,30 @@ public class DiscordOAuth implements IDiscordOAuth {
 						AuthorizeUserResponse authorize = res.result().principal().mapTo(AuthorizeUserResponse.class);
 						Discord4J.LOGGER.debug("OAuth token received");
 
-						RequestBuffer.request(() -> {
-							IUser user = DiscordUtils.getUserFromJSON(client.getShards().get(0), Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", UserObject.class, new BasicNameValuePair("Authorization", "Bearer " + authorize.access_token)));
-							IOAuthUser oauth = new OAuthUser(user, res.result(), Scope.getScopes(authorize.scope));
-							oauthUserCache.put(oauth);
+						if (authorize.webhook != null) {
+							RequestBuffer.request(() -> {
+								IUser user = DiscordUtils.getUserFromJSON(client.getShards().get(0), Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", UserObject.class, new BasicNameValuePair("Authorization", "Bearer " + authorize.access_token)));
+								IOAuthUser oauth = new OAuthUser(user, res.result(), Scope.getScopes(authorize.scope));
+								oauthUserCache.put(oauth);
 
-							onSuccess.accept(context, oauth);
-							client.getDispatcher().dispatch(new OAuthUserAuthorized(oauth));
-						});
+								IOAuthWebhook webhook = new OAuthWebhook(authorize.webhook, oauth);
+								webhooks.put(webhook);
 
-						if (authorize.webhook != null)
-							client.getDispatcher().dispatch(new OAuthWebhookCreate(authorize.webhook));
+								onSuccess.accept(context, oauth);
+								client.getDispatcher().dispatch(new OAuthUserAuthorized(oauth));
+								client.getDispatcher().dispatch(new OAuthWebhookCreate(webhook));
+							});
+						}
+						else {
+							RequestBuffer.request(() -> {
+								IUser user = DiscordUtils.getUserFromJSON(client.getShards().get(0), Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", UserObject.class, new BasicNameValuePair("Authorization", "Bearer " + authorize.access_token)));
+								IOAuthUser oauth = new OAuthUser(user, res.result(), Scope.getScopes(authorize.scope));
+								oauthUserCache.put(oauth);
+
+								onSuccess.accept(context, oauth);
+								client.getDispatcher().dispatch(new OAuthUserAuthorized(oauth));
+							});
+						}
 					}
 				});
 			}
@@ -119,6 +136,16 @@ public class DiscordOAuth implements IDiscordOAuth {
 	@Override
 	public IOAuthUser getOAuthUserForID(long id) {
 		return oauthUserCache.get(id);
+	}
+
+	@Override
+	public List<IOAuthWebhook> getWebhooks() {
+		return new LinkedList<>(webhooks.values());
+	}
+
+	@Override
+	public IOAuthWebhook getWebhookByID(long id) {
+		return webhooks.get(id);
 	}
 
 	@Override

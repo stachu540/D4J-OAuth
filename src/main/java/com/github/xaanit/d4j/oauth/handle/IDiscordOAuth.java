@@ -5,6 +5,8 @@ import io.vertx.ext.web.Router;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IUser;
 
+import java.util.List;
+
 public interface IDiscordOAuth {
 
 	/**
@@ -17,6 +19,10 @@ public interface IDiscordOAuth {
 	IOAuthUser getOAuthUser(IUser user);
 
 	IOAuthUser getOAuthUserForID(long id);
+
+	List<IOAuthWebhook> getWebhooks();
+
+	IOAuthWebhook getWebhookByID(long id);
 
 	/**
 	 * Gets the {@link IDiscordClient} client instance.

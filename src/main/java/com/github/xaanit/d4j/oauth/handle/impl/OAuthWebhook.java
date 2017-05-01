@@ -1,6 +1,8 @@
 package com.github.xaanit.d4j.oauth.handle.impl;
 
+import com.github.xaanit.d4j.oauth.handle.IOAuthUser;
 import com.github.xaanit.d4j.oauth.handle.IOAuthWebhook;
+import com.github.xaanit.d4j.oauth.internal.json.objects.OAuthWebhookObject;
 import sx.blah.discord.handle.obj.IUser;
 
 /**
@@ -24,6 +26,10 @@ public class OAuthWebhook implements IOAuthWebhook {
 		this.name = name;
 		this.avatarURL = avatarURL;
 		this.token = token;
+	}
+
+	public OAuthWebhook(OAuthWebhookObject webhookObject, IOAuthUser user) {
+		this(webhookObject.url, webhookObject.id, webhookObject.guild_id, user, webhookObject.name, webhookObject.avatar, webhookObject.token);
 	}
 
 	@Override

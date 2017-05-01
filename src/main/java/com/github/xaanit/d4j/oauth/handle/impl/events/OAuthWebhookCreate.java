@@ -1,19 +1,19 @@
 package com.github.xaanit.d4j.oauth.handle.impl.events;
 
+import com.github.xaanit.d4j.oauth.handle.IOAuthWebhook;
 import sx.blah.discord.api.events.Event;
-import sx.blah.discord.api.internal.json.objects.WebhookObject;
 
 /**
  * Used when an webhook is created for an unknown/invisible/hidden channel
  */
 public class OAuthWebhookCreate extends Event {
-	private final WebhookObject webhook;
+	private final IOAuthWebhook webhook;
 
-	public OAuthWebhookCreate(WebhookObject webhook) {
+	public OAuthWebhookCreate(IOAuthWebhook webhook) {
 		this.webhook = webhook;
 	}
 
-	public WebhookObject getWebhook() {
+	public IOAuthWebhook getWebhook() {
 		return webhook;
 	}
 }
