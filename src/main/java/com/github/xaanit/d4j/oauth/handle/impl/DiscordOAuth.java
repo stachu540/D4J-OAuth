@@ -38,8 +38,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class DiscordOAuth implements IDiscordOAuth {
-
-	private final List<String> scopes;
+	private final Scope[] scopes;
 	private final String redirectUrl;
 	private final IDiscordClient client;
 	private final OAuth2Auth oauth2Auth;
@@ -50,7 +49,7 @@ public class DiscordOAuth implements IDiscordOAuth {
 
 	public DiscordOAuth(IDiscordClient client, Scope[] scopes, String clientID, String clientSecret,
 						String redirectUrl, String redirectPath, HttpServerOptions options, Consumer<RoutingContext> onFail, BiConsumer<RoutingContext, IOAuthUser> onSuccess) {
-		this.scopes = Arrays.stream(scopes).map(Scope::getName).collect(Collectors.toList());
+		this.scopes = scopes;
 		this.client = client;
 		this.redirectUrl = redirectUrl;
 		this.oauthUserCache = new Cache<>((DiscordClientImpl) client, IOAuthUser.class);
@@ -118,10 +117,14 @@ public class DiscordOAuth implements IDiscordOAuth {
 	}
 
 	public String buildAuthUrl() {
+		return buildAuthUrl(scopes);
+	}
+
+	public String buildAuthUrl(Scope[] scopes) {
 		try {
 			return oauth2Auth.authorizeURL(new JsonObject()
 					.put("redirect_uri", redirectUrl)
-					.put("scopes", new JsonArray(scopes)));
+					.put("scopes", new JsonArray(Arrays.stream(scopes).map(Scope::getName).collect(Collectors.toList()))));
 		} catch (Throwable th) {
 			th.printStackTrace();
 		}

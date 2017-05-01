@@ -1,5 +1,6 @@
 package com.github.xaanit.d4j.oauth.handle;
 
+import com.github.xaanit.d4j.oauth.Scope;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import sx.blah.discord.api.IDiscordClient;
@@ -10,11 +11,19 @@ import java.util.List;
 public interface IDiscordOAuth {
 
 	/**
-	 * Builds the AuthURL to send to the user.
+	 * Builds the AuthURL to send to the user with the default scopes.
 	 *
 	 * @return The AuthURl
 	 */
 	String buildAuthUrl();
+
+	/**
+	 * Builds the AuthURL to send to the user.
+	 *
+	 * @param scopes The scopes to use
+	 * @return The AuthURl
+	 */
+	String buildAuthUrl(Scope[] scopes);
 
 	IOAuthUser getOAuthUser(IUser user);
 

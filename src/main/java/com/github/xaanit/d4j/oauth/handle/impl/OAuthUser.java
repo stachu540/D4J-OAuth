@@ -202,7 +202,7 @@ public class OAuthUser implements IOAuthUser {
 		checkScope(Scope.CONNECTIONS);
 		refreshTokenIfNeeded();
 
-		return Arrays.stream(Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/connections", UserConnectionObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.token))).map(c -> new Connection(this, c.id, c.name, c.type, c.revoked, c.visibility == 1, c.friend_sync)).collect(Collectors.toList());
+		return Arrays.stream(Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/connections", UserConnectionObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.getAccessToken()))).map(c -> new Connection(this, c.id, c.name, c.type, c.revoked, c.visibility == 1, c.friend_sync)).collect(Collectors.toList());
 	}
 
 	@Override
@@ -210,7 +210,7 @@ public class OAuthUser implements IOAuthUser {
 		checkScope(Scope.EMAIL);
 		refreshTokenIfNeeded();
 
-		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.token));
+		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.getAccessToken()));
 		return o.email;
 	}
 
@@ -219,7 +219,7 @@ public class OAuthUser implements IOAuthUser {
 		checkScope(Scope.EMAIL);
 		refreshTokenIfNeeded();
 
-		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.token));
+		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.getAccessToken()));
 		return o.verified;
 	}
 
@@ -228,7 +228,7 @@ public class OAuthUser implements IOAuthUser {
 		//No scope check here, since any call seems to allow for an identify
 		refreshTokenIfNeeded();
 
-		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.token));
+		OAuthUserObject o = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.getAccessToken()));
 		return o.mfa_enabled;
 	}
 
@@ -237,7 +237,7 @@ public class OAuthUser implements IOAuthUser {
 		checkScope(Scope.GUILDS);
 		refreshTokenIfNeeded();
 
-		UserGuildObject[] userGuilds = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/guilds", UserGuildObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.token));
+		UserGuildObject[] userGuilds = Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me/guilds", UserGuildObject[].class, new BasicNameValuePair("Authorization", "Bearer " + this.getAccessToken()));
 		return Arrays.stream(userGuilds).map(g -> new UserGuild(g.id, g.name, g.icon, g.owner, g.permissions, this)).collect(Collectors.toList());
 	}
 
@@ -322,7 +322,7 @@ public class OAuthUser implements IOAuthUser {
 		checkScope(Scope.GUILDS_JOIN);
 		refreshTokenIfNeeded();
 
-		InviteObject obj = Requests.GENERAL_REQUESTS.POST.makeRequest(DiscordEndpoints.INVITE + inviteCode, InviteObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.token));
+		InviteObject obj = Requests.GENERAL_REQUESTS.POST.makeRequest(DiscordEndpoints.INVITE + inviteCode, InviteObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.getAccessToken()));
 		return DiscordUtils.getInviteFromJSON(user.getClient(), obj);
 	}
 
@@ -333,7 +333,7 @@ public class OAuthUser implements IOAuthUser {
 //			authTokens[i] = users[i].getAccessToken();
 //			nicks[i] = users[i].getStringID() + ":" + users[i].getName();
 //		}
-//		Requests.GENERAL_REQUESTS.POST.makeRequest(DiscordEndpoints.USERS + "@me/channels", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.token));
+//		Requests.GENERAL_REQUESTS.POST.makeRequest(DiscordEndpoints.USERS + "@me/channels", OAuthUserObject.class, new BasicNameValuePair("Authorization", "Bearer " + this.getAccessToken()));
 	}
 
 	@Override
