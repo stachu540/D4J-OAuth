@@ -1,8 +1,12 @@
+
+
 # D4J-OAuth
-Java interface for Discord's OAuth API, integrated into [Discord4J](https://github.com/austinv11/Discord4J).
+Java interface for Discord's OAuth API, integrated into [Discord4J](https://github.com/austinv11/Discord4J). 
+
+[Support Server](https://discord.gg/FCXNeUq)
 
 # How to use
-D4J-OAuth is designed to be as simple to implement as possible, while still providing the power to do cool stuff.
+D4J-OAuth is designed to be as simple to implement as possible, while still providing the power to do cool stuff. NOTE: **YOU MUST BE ON DISCORD4J 2.8.1 OR ABOVE**
 
 To start, you'll want to create an instance of `DiscordOAuthBuilder`, and provide it a client id, client secret, a redirect URL, and at least one scope. For example
 
@@ -32,3 +36,5 @@ This will create an instanceof of IDiscordOAuth bound to port 8080, with the cli
 ```
 
 `master-SNAPSHOT` can also be substituted for a GitHub commit.
+
+

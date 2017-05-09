@@ -82,15 +82,62 @@ public interface IOAuthUser extends IUser {
 	 */
 	void joinGuild(IGuild guild, String nickname);
 
+	/**
+	 * Attempts to join a guild as the user, and set their nickname
+	 * Note: This action is only performable if the app has a bundled bot, and the bot is in that guild.
+	 * The bot also requires the CREATE_INSTANT_INVITE permission, MANAGE_NICKNAMES, and MANAGE_ROLES
+	 *
+	 * @param guild    The guild to try and join
+	 * @param nickname The nickname to set to this user upon joining
+	 * @param roles    The roles the user should have on join
+	 */
 	void joinGuild(IGuild guild, String nickname, IRole[] roles);
 
+	/**
+	 * Attempts to join a guild as the user, and set their nickname
+	 * Note: This action is only performable if the app has a bundled bot, and the bot is in that guild.
+	 * The bot also requires the CREATE_INSTANT_INVITE permission, MANAGE_NICKNAMES, MANAGE_ROLES, and MUTE_MEMBERS
+	 *
+	 * @param guild    The guild to try and join
+	 * @param nickname The nickname to set to this user upon joining
+	 * @param roles    The roles the user should have on join
+	 * @param muted    If the user should be muted on join
+	 */
 	void joinGuild(IGuild guild, String nickname, IRole[] roles, boolean muted);
 
+	/**
+	 * Attempts to join a guild as the user, and set their nickname
+	 * Note: This action is only performable if the app has a bundled bot, and the bot is in that guild.
+	 * The bot also requires the CREATE_INSTANT_INVITE permission, MANAGE_NICKNAMES, MANAGE_ROLES, MUTE_MEMBERS, and DEAFEN_MEMBERS
+	 *
+	 * @param guild    The guild to try and join
+	 * @param nickname The nickname to set to this user upon joining
+	 * @param roles    The roles the user should have on join
+	 * @param muted    If the user should be muted on join
+	 * @param deafened If the user should be deafened on join
+	 */
 	void joinGuild(IGuild guild, String nickname, IRole[] roles, boolean muted, boolean deafened);
 
+	/**
+	 * Attempts to join a guild as the user.
+	 *
+	 * @param invite The {@link IInvite} invite
+	 * @return The invite object
+	 */
 	IInvite joinGuild(IInvite invite);
 
+	/**
+	 * Attempts to join a guild as the user.
+	 *
+	 * @param inviteCode The string invite code
+	 * @return The invite link
+	 */
 	IInvite joinGuildWithInviteCode(String inviteCode);
 
+	/**
+	 * Gets the scopes authorised for this user
+	 *
+	 * @return The enum set of scopes
+	 */
 	EnumSet<Scope> getAuthorizedScopes();
 }
