@@ -10,6 +10,10 @@ import java.util.List;
 
 public interface IDiscordOAuth {
 
+	String getClientID();
+
+	String getClientSecret();
+
 	/**
 	 * Builds the AuthURL to send to the user with the default scopes.
 	 *
@@ -28,6 +32,8 @@ public interface IDiscordOAuth {
 	IOAuthUser getOAuthUser(IUser user);
 
 	IOAuthUser getOAuthUserForID(long id);
+
+	IOAuthUser getOAuthUserForRefreshToken(String refreshToken);
 
 	List<IOAuthWebhook> getWebhooks();
 

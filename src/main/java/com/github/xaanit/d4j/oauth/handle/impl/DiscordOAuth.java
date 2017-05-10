@@ -38,6 +38,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class DiscordOAuth implements IDiscordOAuth {
+	private final String clientID;
+	private final String clientSecret;
 	private final Scope[] scopes;
 	private final String redirectUrl;
 	private final IDiscordClient client;
@@ -49,6 +51,8 @@ public class DiscordOAuth implements IDiscordOAuth {
 
 	public DiscordOAuth(IDiscordClient client, Scope[] scopes, String clientID, String clientSecret,
 						String redirectUrl, String redirectPath, HttpServerOptions options, Consumer<RoutingContext> onFail, BiConsumer<RoutingContext, IOAuthUser> onSuccess) {
+		this.clientID = clientID;
+		this.clientSecret = clientSecret;
 		this.scopes = scopes;
 		this.client = client;
 		this.redirectUrl = redirectUrl;
@@ -86,8 +90,7 @@ public class DiscordOAuth implements IDiscordOAuth {
 						if (authorize.webhook != null) {
 							RequestBuffer.request(() -> {
 								IUser user = DiscordUtils.getUserFromJSON(client.getShards().get(0), Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", UserObject.class, new BasicNameValuePair("Authorization", "Bearer " + authorize.access_token)));
-								IOAuthUser oauth = new OAuthUser(user, res.result(), Scope.getScopes(authorize.scope));
-								oauthUserCache.put(oauth);
+								IOAuthUser oauth = addOAuthUser(user, authorize);
 
 								IOAuthWebhook webhook = new OAuthWebhook(authorize.webhook, oauth);
 								webhooks.put(webhook);
@@ -99,8 +102,7 @@ public class DiscordOAuth implements IDiscordOAuth {
 						} else {
 							RequestBuffer.request(() -> {
 								IUser user = DiscordUtils.getUserFromJSON(client.getShards().get(0), Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", UserObject.class, new BasicNameValuePair("Authorization", "Bearer " + authorize.access_token)));
-								IOAuthUser oauth = new OAuthUser(user, res.result(), Scope.getScopes(authorize.scope));
-								oauthUserCache.put(oauth);
+								IOAuthUser oauth = addOAuthUser(user, authorize);
 
 								onSuccess.accept(context, oauth);
 								client.getDispatcher().dispatch(new OAuthUserAuthorized(oauth));
@@ -113,6 +115,16 @@ public class DiscordOAuth implements IDiscordOAuth {
 
 		server.requestHandler(router::accept);
 		server.listen();
+	}
+
+	@Override
+	public String getClientID() {
+		return clientID;
+	}
+
+	@Override
+	public String getClientSecret() {
+		return clientSecret;
 	}
 
 	public String buildAuthUrl() {
@@ -141,6 +153,13 @@ public class DiscordOAuth implements IDiscordOAuth {
 	}
 
 	@Override
+	public IOAuthUser getOAuthUserForRefreshToken(String refreshToken) {
+		AuthorizeUserResponse authorize = Requests.GENERAL_REQUESTS.POST.makeRequest(DiscordEndpoints.OAUTH + "token", String.format("grant_type=refresh_token&refresh_token=%s&client_id=%s&client_secret=%s", refreshToken, clientID, clientSecret), AuthorizeUserResponse.class, new BasicNameValuePair("Content-Type", "application/x-www-form-urlencoded"));
+		IUser user = DiscordUtils.getUserFromJSON(client.getShards().get(0), Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", UserObject.class, new BasicNameValuePair("Authorization", "Bearer " + authorize.access_token)));
+		return addOAuthUser(user, authorize);
+	}
+
+	@Override
 	public List<IOAuthWebhook> getWebhooks() {
 		return new LinkedList<>(webhooks.values());
 	}
@@ -163,5 +182,18 @@ public class DiscordOAuth implements IDiscordOAuth {
 	@Override
 	public Router getRouter() {
 		return router;
+	}
+
+	public IOAuthUser addOAuthUser(IUser user, AuthorizeUserResponse authorize) {
+		if(oauthUserCache.containsKey(user.getLongID())) {
+			OAuthUser oauth = (OAuthUser) oauthUserCache.get(user.getLongID());
+			oauth.updateToken(authorize.access_token, authorize.expires_at);
+			return oauth;
+		}
+		else {
+			IOAuthUser oauth = new OAuthUser(this, user, authorize.access_token, authorize.refresh_token, 0, Scope.getScopes(authorize.scope));
+			oauthUserCache.put(oauth);
+			return oauth;
+		}
 	}
 }

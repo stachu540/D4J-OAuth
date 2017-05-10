@@ -3,14 +3,11 @@ package com.github.xaanit.d4j.oauth.handle.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.xaanit.d4j.oauth.Scope;
 import com.github.xaanit.d4j.oauth.handle.IConnection;
+import com.github.xaanit.d4j.oauth.handle.IDiscordOAuth;
 import com.github.xaanit.d4j.oauth.handle.IOAuthUser;
 import com.github.xaanit.d4j.oauth.handle.IUserGuild;
-import com.github.xaanit.d4j.oauth.internal.json.objects.MemberAddRequest;
-import com.github.xaanit.d4j.oauth.internal.json.objects.OAuthUserObject;
-import com.github.xaanit.d4j.oauth.internal.json.objects.UserConnectionObject;
-import com.github.xaanit.d4j.oauth.internal.json.objects.UserGuildObject;
+import com.github.xaanit.d4j.oauth.internal.json.objects.*;
 import com.github.xaanit.d4j.oauth.util.MissingScopeException;
-import io.vertx.ext.auth.oauth2.AccessToken;
 import org.apache.http.message.BasicNameValuePair;
 import sx.blah.discord.Discord4J;
 import sx.blah.discord.api.IDiscordClient;
@@ -38,13 +35,19 @@ import java.util.stream.Collectors;
  * Created by Jacob on 4/21/2017.
  */
 public class OAuthUser implements IOAuthUser {
+	private final IDiscordOAuth oauth;
 	private final IUser user;
-	private final AccessToken token;
+	private String accessToken;
+	private long expiresAt;
+	private final String refreshToken;
 	private final EnumSet<Scope> scopes;
 
-	public OAuthUser(IUser user, AccessToken token, EnumSet<Scope> scopes) {
+	public OAuthUser(IDiscordOAuth oauth, IUser user, String accessToken, String refreshToken, long expiresAt, EnumSet<Scope> scopes) {
+		this.oauth = oauth;
 		this.user = user;
-		this.token = token;
+		this.accessToken = accessToken;
+		this.expiresAt = expiresAt;
+		this.refreshToken = refreshToken;
 		this.scopes = scopes;
 	}
 
@@ -184,17 +187,29 @@ public class OAuthUser implements IOAuthUser {
 
 	@Override
 	public IUser copy() {
-		return new OAuthUser(user.copy(), token, scopes);
+		return new OAuthUser(oauth, user.copy(), accessToken, refreshToken, expiresAt, scopes);
 	}
 
 	@Override
 	public String getAccessToken() {
-		return token.principal().getString("access_token");
+		return accessToken;
 	}
 
 	@Override
-	public AccessToken getToken() {
-		return token;
+	public String getRefreshToken() {
+		return refreshToken;
+	}
+
+	@Override
+	public IDiscordOAuth getOAuth() {
+		return oauth;
+	}
+
+	@Override
+	public void refreshToken() {
+		AuthorizeUserResponse response = Requests.GENERAL_REQUESTS.POST.makeRequest(DiscordEndpoints.OAUTH + "token", String.format("grant_type=refresh_token&refresh_token=%s&client_id=%s&client_secret=%s", refreshToken, oauth.getClientID(), oauth.getClientSecret()), AuthorizeUserResponse.class, new BasicNameValuePair("Content-Type", "application/x-www-form-urlencoded"));
+		this.accessToken = response.access_token;
+		this.expiresAt = response.expires_at;
 	}
 
 	@Override
@@ -347,13 +362,12 @@ public class OAuthUser implements IOAuthUser {
 	}
 
 	private void refreshTokenIfNeeded() {
-		if (token.expired()) {
-			token.refresh(res -> {
-				if (res.failed()) {
-					System.err.println("Refreshing token failed.");
-					res.cause().printStackTrace();
-				}
-			});
-		}
+		if(System.currentTimeMillis() > expiresAt)
+			refreshToken();
+	}
+
+	public void updateToken(String accessToken, long expiresAt) {
+		this.accessToken = accessToken;
+		this.expiresAt = expiresAt;
 	}
 }

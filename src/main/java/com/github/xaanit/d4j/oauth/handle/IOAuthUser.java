@@ -1,7 +1,6 @@
 package com.github.xaanit.d4j.oauth.handle;
 
 import com.github.xaanit.d4j.oauth.Scope;
-import io.vertx.ext.auth.oauth2.AccessToken;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IInvite;
 import sx.blah.discord.handle.obj.IRole;
@@ -21,12 +20,11 @@ public interface IOAuthUser extends IUser {
 	 */
 	String getAccessToken();
 
-	/**
-	 * Gets the full token for this user. Unlikely to be useful, unless you plan on saving tokens across instances.
-	 *
-	 * @return The full token for this user.
-	 */
-	AccessToken getToken();
+	String getRefreshToken();
+
+	IDiscordOAuth getOAuth();
+
+	void refreshToken();
 
 	/**
 	 * Gets the list of {@link IConnection} connections the user has.
