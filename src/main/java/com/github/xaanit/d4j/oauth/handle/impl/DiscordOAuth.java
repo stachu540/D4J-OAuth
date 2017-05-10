@@ -96,8 +96,7 @@ public class DiscordOAuth implements IDiscordOAuth {
 								client.getDispatcher().dispatch(new OAuthUserAuthorized(oauth));
 								client.getDispatcher().dispatch(new OAuthWebhookCreate(webhook));
 							});
-						}
-						else {
+						} else {
 							RequestBuffer.request(() -> {
 								IUser user = DiscordUtils.getUserFromJSON(client.getShards().get(0), Requests.GENERAL_REQUESTS.GET.makeRequest(DiscordEndpoints.USERS + "@me", UserObject.class, new BasicNameValuePair("Authorization", "Bearer " + authorize.access_token)));
 								IOAuthUser oauth = new OAuthUser(user, res.result(), Scope.getScopes(authorize.scope));
@@ -133,12 +132,12 @@ public class DiscordOAuth implements IDiscordOAuth {
 
 	@Override
 	public IOAuthUser getOAuthUser(IUser user) {
-		return oauthUserCache.get(user.getLongID());
+		return !oauthUserCache.containsKey(user.getLongID()) ? null : oauthUserCache.get(user.getLongID());
 	}
 
 	@Override
 	public IOAuthUser getOAuthUserForID(long id) {
-		return oauthUserCache.get(id);
+		return !oauthUserCache.containsKey(id) ? null : oauthUserCache.get(id);
 	}
 
 	@Override
@@ -148,7 +147,7 @@ public class DiscordOAuth implements IDiscordOAuth {
 
 	@Override
 	public IOAuthWebhook getWebhookByID(long id) {
-		return webhooks.get(id);
+		return !webhooks.containsKey(id) ? null : webhooks.get(id);
 	}
 
 	@Override
