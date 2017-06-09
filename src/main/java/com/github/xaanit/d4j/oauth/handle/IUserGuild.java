@@ -39,7 +39,7 @@ public interface IUserGuild {
 	 *
 	 * @return {@code true} if they are; otherwise {@code false}
 	 */
-	Boolean isOwner();
+	boolean isOwner();
 
 	/**
 	 * Gets the permissions for the user has for this guild
