@@ -48,7 +48,7 @@ public class UserGuild implements IUserGuild {
 	}
 
 	@Override
-	public Boolean isOwner() {
+	public boolean isOwner() {
 		return this.owner;
 	}
 

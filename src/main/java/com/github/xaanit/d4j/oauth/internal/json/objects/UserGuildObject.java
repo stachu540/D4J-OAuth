@@ -23,7 +23,7 @@ public class UserGuildObject {
 	/**
 	 * If the user is the owner of the guild.
 	 */
-	public Boolean owner;
+	public boolean owner;
 
 	/**
 	 * Bitwise integer of the users enabled/disabled permissions.
