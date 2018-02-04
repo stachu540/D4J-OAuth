@@ -1,7 +1,11 @@
 
 
+# DISCONTINUED. FEEL FREE TO PICK BACK UP.
+
 # D4J-OAuth
 Java interface for Discord's OAuth API, integrated into [Discord4J](https://github.com/austinv11/Discord4J). 
+
+
 
 [Support Server](https://discord.gg/FCXNeUq)
 
